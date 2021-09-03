@@ -31,8 +31,7 @@ a, b, σa, σb, S, ρ, bᵢ, i = linearfit_xy_errors(X,Y,σX,σY; r=0)
 #####
 ##### Amen, S.K. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas
 #####
-##### Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and
-##### application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487
+##### Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487
 #####
 ##### York, D. [1966] LEAST-SQUARES FITTING OF A STRAIGHT LINE. Canadian Journal of Physics, 44(5), pp.1079–1086
 #####
