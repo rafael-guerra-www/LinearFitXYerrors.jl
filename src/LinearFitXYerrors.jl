@@ -1,5 +1,8 @@
 module LinearFitXYerrors
 
+export linearfit_xy_errors
+export plot_covariance_ellipses!
+
 # TODO: confidence_intervals
 
 """
