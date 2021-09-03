@@ -2,6 +2,7 @@
 ##############   EXAMPLE-2     ##############
 # INPUT DATA: Table 3.1 from Amen, S. [2012]
 
+using LinearFitXYerrors
 using CSV, DataFrames
 
 file = raw"C:\Users\jrafa\OneDrive\Julia_Code\TO_DO\Linear_fit__errors_x_y\Amen_Errors_X_Y_and_covariance_Table_31.csv"
