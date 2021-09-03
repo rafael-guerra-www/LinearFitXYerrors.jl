@@ -5,6 +5,8 @@
 # application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487
 # Data taken from Pearson (1901)
 
+using LinearFitXYerrors
+
 X = [0.0, 0.9, 1.8, 2.6, 3.3, 4.4, 5.2, 6.1, 6.5, 7.4]
 Y = [5.9, 5.4, 4.4, 4.6, 3.5, 3.7, 2.8, 2.8, 2.4, 1.5]
 σX = 1 ./ sqrt.([1000., 1000, 500, 800, 200, 80,  60, 20, 1.8, 1])
