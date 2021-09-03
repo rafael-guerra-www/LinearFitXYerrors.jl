@@ -1,12 +1,12 @@
 # LinearFitXYerrors.jl
 #
-#### Example-1a in examples folder produces:
+### Example-1a in examples folder produces:
 ![LinearFitXYerrors_example1a](https://user-images.githubusercontent.com/20739393/131935038-81db52a3-a9e5-43ab-b28b-1b701b11952f.png)
 #
-#### Example-1b in examples folder produces:
+### Example-1b in examples folder produces:
 ![LinearFitXYerrors_example1b](https://user-images.githubusercontent.com/20739393/131935054-eab90824-c892-485c-9dd3-e26d61b434e7.png)
 #
-#### Example-2 in examples folder produces:
+### Example-2 in examples folder produces:
 ![LinearFitXYerrors_example2](https://user-images.githubusercontent.com/20739393/131934790-68da2f2e-b132-4d65-89a6-54e92c324db2.png)
 
 
