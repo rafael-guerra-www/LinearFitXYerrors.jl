@@ -4,6 +4,7 @@ export linearfit_xy_errors
 export plot_covariance_ellipses!
 
 using Statistics
+using Plots; gr()
 
 # TODO: confidence_intervals
 
