@@ -6,17 +6,15 @@ This Julia package, based on York (1966) and York et al. (2004), performs 1D lin
             
             Errors:                 X ± σX;  Y ± σY                     [2]
             
-            Errors correlation:     r =  = covXY / (σX * σY)            [3]
+            Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)            [3]
 
 where:
 - `X` and `Y` are input data vectors with length ≥ 2
 - Optional standard deviation errors `σX` and `σY` are vectors or scalars
 - Optional `r` is the correlation between the `σX` and `σY` errors\
-           `r` can be a vector or scalar (for constant covariance)
+           `r` can be a vector or scalar
 
-
-
-The `σX` and `σY` errors (error ellipses) can be correlated, a bivariate Gaussian distribution is assumed.\
+For the `σX` and `σY` errors (error ellipses) a bivariate Gaussian distribution is assumed.\
 If no errors are provided, or if only `σX` or `σY` are provided, then the results are equivalent to those obtained using the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
 
 `LinearFitXYerrors.jl` is based on York (1966) and York et al. (2004). See references for further details.
@@ -27,7 +25,7 @@ The package delivers:
 - Pearson's correlation coefficient `ρ` that accounts for data errors
 - Plot recipe to display fit results with error ellipses
 
-The default argument `plot=false` can be turned on to plot the results.\
+The default argument `isplot=false` can be turned on to plot the results.\
 Currently `using Plots.jl; gr()` is used.
 
 ##
