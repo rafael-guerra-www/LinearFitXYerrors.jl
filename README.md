@@ -58,8 +58,8 @@ a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 
-### Example-1: uncorrelated errors
+## Example-1: uncorrelated errors
 ![LinearFitXYerrors_example1b](https://user-images.githubusercontent.com/20739393/131935054-eab90824-c892-485c-9dd3-e26d61b434e7.png)
-#
-### Example-2: correlated errors
+
+## Example-2: correlated errors
 ![LinearFitXYerrors_example2](https://user-images.githubusercontent.com/20739393/131934790-68da2f2e-b132-4d65-89a6-54e92c324db2.png)
