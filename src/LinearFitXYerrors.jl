@@ -8,6 +8,7 @@ using Plots; gr()
 
 #test push
 #test pull
+#test pull2
 
 # TODO: confidence_intervals
 
