@@ -1,8 +1,29 @@
 # LinearFitXYerrors.jl
 
-```julia
-a, b, σa, σb, S, ρ, bᵢ, i = linearfit_xy_errors(X,Y,σX,σY; r=0)
+This Julia package performs 1D linear fitting to experimental data: Y = a + b*Y\
+The input data can have errors in both X and Y (error ellipses)\
+The errors can be correlated and a bivariate Gaussian distribution is assumed.
 
+This package estimates:
+- The slope `b` and intercept `a` and their uncertainties
+- Goodness of fit
+- Pearson's correlation coefficient
+
+The default argument `plot=false` can be turned on to plot the results.\
+Currently `using Plots.jl; gr()` is used.\
+
+## Installation
+```julia
+julia> ] add https://github.com/rafael-guerra-www/LinearFitXYerrors.jl
+julia> using LinearFitXYerrors
+```
+
+## Useage
+```julia
+a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY)
+a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
+a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
+```
 #  Y = a + bX      linear fit with errors in both X & Y
 
 #  X Y are input vectors with length > 2
@@ -14,23 +35,21 @@ a, b, σa, σb, S, ρ, bᵢ, i = linearfit_xy_errors(X,Y,σX,σY; r=0)
 
 #  Ŝ is a measure of goodness of fit, perfect linear fit if Ŝ = 1
 #  ρ is Pearson correlation coefficient taking in account data errors
-#  bᵢ, i : to QC convergence of b and number of iterations i required
+
 ```
 
-#####
-### References:
-#####
-##### Amen, S.K. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas
-#####
-##### Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487
-#####
-##### York, D. [1966] LEAST-SQUARES FITTING OF A STRAIGHT LINE. Canadian Journal of Physics, 44(5), pp.1079–1086
-#####
-##### York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]
-#####
-##### Regression dilution, https://en.wikipedia.org/wiki/Regression_dilution
-#
-#
+
+## References:
+*Amen, S.K. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas*
+
+*Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487*
+
+*York, D. [1966] LEAST-SQUARES FITTING OF A STRAIGHT LINE. Canadian Journal of Physics, 44(5), pp.1079–1086*
+
+*York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
+
+*Regression dilution, https://en.wikipedia.org/wiki/Regression_dilution*
+
 ### Example-1a in examples folder produces:
 ![LinearFitXYerrors_example1a](https://user-images.githubusercontent.com/20739393/131935038-81db52a3-a9e5-43ab-b28b-1b701b11952f.png)
 #
