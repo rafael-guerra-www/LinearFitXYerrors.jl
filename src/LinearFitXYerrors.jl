@@ -7,6 +7,7 @@ using Statistics
 using Plots; gr()
 
 #test push
+#test pull
 
 # TODO: confidence_intervals
 
