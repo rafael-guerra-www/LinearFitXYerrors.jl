@@ -1,7 +1,7 @@
 # linearfit_xy_errors.jl
 
 
-struct lfit
+struct stfit
     a  :: Float64
     b  :: Float64
     σa :: Float64
@@ -16,7 +16,7 @@ struct lfit
 # TODO: confidence_intervals
 
 """
-# a, b, σa, σb, S, ρ, bᵢ, i = linearfit_xy_errors(X,Y,σX,σY; r=0)
+# stfit = linearfit_xy_errors(X,Y,σX,σY; r=0)
 #
 #       Y = a + bX     : linear fit with errors in both X & Y
 #
@@ -27,9 +27,11 @@ struct lfit
 # r can be a vector or scalar (for constant covariance)
 # The probability distribution of each measurement is assumed to be a bivariate Gaussian
 #
-# Ŝ is a measure of goodness of fit, perfect linear fit if Ŝ = 1
-# ρ is Pearson correlation coefficient taking in account data errors
-# bᵢ, i : to QC convergence of b and number of iterations i required
+# stfit.a, stfit.b
+# stfit.σa, stfit.σb
+# stfit.S is a measure of goodness of fit, perfect linear fit if Ŝ = 1
+# stfit.ρ is Pearson correlation coefficient taking in account data errors
+# stfit.bᵢ, stfit.i : to QC convergence of b and number of iterations i required
 #
 #
 # References:
@@ -39,12 +41,12 @@ struct lfit
 # Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and
 # application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487
 #
+# Regression dilution, https://en.wikipedia.org/wiki/Regression_dilution
+#
 # York, D. [1966] Least-squares fitting of a straight line. Canadian Journal of Physics, 44(5), pp.1079–1086
 #
 # York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept
 # and standard errors of the best straight line. Am. J.Phys. 72 [3]
-#
-# Regression dilution, https://en.wikipedia.org/wiki/Regression_dilution
 #
 #
 """
@@ -91,13 +93,21 @@ function linearfit_xy_errors(X::AbstractArray{<:Real}, Y::AbstractArray{<:Real};
     vX = var(X); vY = var(Y)
     ρ = cov(X,Y)/sqrt(vX*vY) * sqrt(vX/(vX + var(σX))) * sqrt(vY/(vY + var(σY))) 
 
-
     # standard error *Ŝ factor defined in Cantrell (2008)
-    return lfit(a, b, σa*Ŝ, σb*Ŝ, Ŝ, ρ, bᵢ, i)
+    st = stfit(a, b, σa*Ŝ, σb*Ŝ, Ŝ, ρ, bᵢ, i)
+
+    if isplot
+        plotlinfitxy(X, Y; σX, σY, r, st)
+    end
+
+    @printf("LinearFitXY (X-Y errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*μe", a,  σa, b, σb)
+    @printf("Pearson ρ = %.2f;  Goodness of fit = %.2f", ρ, Ŝ)
+
+    return st
 end
 
 
-function plot_covariance_ellipses!(X,Y,a, b, c; lc=:lightgrey, lw=0.3)
+function plot_covariance_ellipses!(X, Y, a,  b, c; lc=:lightgrey, lw=0.3)
     # https://cookierobotics.com/007/
     # covariance matrix = [a b; b c]
     t = LinRange(0, 2π, 72)
@@ -120,51 +130,29 @@ function plot_covariance_ellipses!(X,Y,a, b, c; lc=:lightgrey, lw=0.3)
 end
 
 
+function  plotlinfitxy(X, Y; σX=0, σY=0, r=0, st::stfit)
+    covXY = σX .* σY .* r
+    # sort data because of ribbon:
+    I = sortperm(X);
+    X = X[I];  Y = Y[I]; σX = σX[I];  σY = σY[I]; covXY = covXY[I];
 
-# PLOT:
-using Printf, Measures, Plots; gr(dpi=300)
+    str1 = @sprintf("LinearFitXY (X-Y errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*X", st.a, st.σa, st.b, st.σb)
+    str2 = @sprintf("\nPearson r = %.2f; Goodness of fit = %.2f", st.ρ, st.S)
 
-plot_font = "Computer Modern";
-default(fontfamily=plot_font,framestyle=:axes,yminorgrid=true, legendtitlefontsize=6,fg_color_legend=nothing,
-    legendfontsize=6, guidefont=(7,:black),tickfont=(6,:black),size=(600,400),dpi=300, margin=0mm,
-    titlefont = (6, plot_font))
-
-# plot bᵢ with convergence of slope parameter b:
-plot(1:ni+1, bᵢ[1:ni+1], xlabel="Iteration #", ylabel="b - slope")
-
-# sort data because of ribbon:
-I = sortperm(μₑ);
-μₑ = μₑ[I];  η = η[I]; σμₑ = σμₑ[I];  ση = ση[I]; cov_μₑ_η = cov_μₑ_η[I];
-
-str1 = @sprintf("LinearFitXY (X-Y errors): η = (%.4f +/- %.4f) + (%.4f +/- %.4f)*X", a, σa, b, σb)
-str2 = @sprintf("\nPearson r = %.2f; Goodness of fit = %.2f", ρ, Ŝ)
-
-x1, x2 = (-1., 1.5) .+ extrema(μₑ)
-xx = [x1; μₑ; x2]
-tl, bl = (a - σa) .+ (b + σb)*xx,   (a + σa) .+ (b - σb)*xx
-σp, σm = maximum([tl bl], dims=2) .-  (a .+ b*xx),  (a .+ b*xx) .- minimum([tl bl], dims=2)
+    dX = diff([extrema(X)...])[1]/7    # extends plot x-axis by 1/7 each side
+    x1, x2 = (-dX, dX) .+ extrema(X)
+    xx = [x1; X; x2]
+    tl, bl = (st.a - st.σa) .+ (st.b + st.σb)*xx,  (st.a + st.σa) .+ (st.b - st.σb)*xx
+    σp, σm = maximum([tl bl], dims=2) .-  (st.a .+ st.b*xx),  (st.a .+ st.b*xx) .- minimum([tl bl], dims=2)
 
 
-plot(xlims=(x1,x2), ylims=(0,13), title=str1*str2, ratio=1, legend=:outerbottomright)
-plot!(xx, a .+ b*xx, color=:lightblue, ribbon=(σp,σm), label=false)
-plot!(xx, a .+ b*xx, color=:blue, lw=0.5, xlabel="μe", ylabel="η", label="LinearFitXY")
-scatter!(μₑ, η, msw=0.1, ms=1., msc=:lightgrey, xerror= σμₑ, yerror= ση, label=false)
-scatter!(μₑ, η, msw=0.1, ms=1.5, mc=:blue, label=false)
-plot_covariance_ellipses!(μₑ, η, σμₑ.^2, cov_μₑ_η, ση.^2; lc=:grey)
+    plot(xlims=(x1,x2), ylims=(0,13), title=str1*str2, ratio=1, legend=:outerbottomright)
+    plot!(xx, st.a .+ st.b*xx, color=:lightblue, ribbon=(σp,σm), label=false)
+    plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="μe", ylabel="Y", label="LinearFitXY")
+    scatter!(X, Y, msw=0.1, ms=1., msc=:lightgrey, xerror= σX, yerror= σY, label=false)
+    scatter!(X, Y, msw=0.1, ms=1.5, mc=:blue, label=false)
 
-@printf("LinearFitXY (X-Y errors): η = (%.4f +/- %.4f) + (%.4f +/- %.4f)*μe", a,  σa, b, σb)
-@printf("Pearson r = %.2f; Goodness of fit = %.2f", ρ, Ŝ)
+    plot_covariance_ellipses!(X, Y, σX.^2, covXY, σY.^2; lc=:grey)
+end
 
-# If assuming only erros in Y or in X:
-ay, by, σay, σby, Ŝy, ρy = linearfit_xy_errors(μₑ, η; σX=0, σY=ση, r=r);
-ax, bx, σax, σbx, Ŝx, ρx = linearfit_xy_errors(μₑ, η; σX=σμₑ, σY=0, r=r)
-
-plot!(xx, ay .+ by*xx, color=:lime, lw=0.5, label="LinearFitXY (Y errors)");
-plot!(xx, ax .+ bx*xx, color=:orange, lw=0.5, label="LinearFitXY (X errors)");
-
-@printf("LinearFitXY (Y errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*X", ay,  σay, by, σby);
-@printf("Pearson r = %.2f; Goodness of fit = %.2f", ρy, Ŝy)
-
-@printf("LinearFitXY (X errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*X", ax,  σax, bx, σbx);
-@printf("Pearson r = %.2f; Goodness of fit = %.2f", ρx, Ŝx)
 

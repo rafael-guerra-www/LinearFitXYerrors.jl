@@ -1,11 +1,12 @@
 
 ##############   EXAMPLE-2     ##############
-# INPUT DATA: Table 3.1 from Amen, S. [2012]
 
 using LinearFitXYerrors
-using CSV, DataFrames
 
+# INPUT DATA: Table 3.1 from Amen, S. [2012]
 # download csv file from examples folder to your local disk and edit path:
+
+using CSV, DataFrames
 file = raw".\examples\Amen_Errors_X_Y_and_covariance_Table_31.csv"
 M = CSV.read(file, DataFrame)
 
@@ -18,8 +19,27 @@ r = M[:,:cov_ue_n] ./ (σμₑ .* ση )   # correlation coefficient between err
 
 
 # COMPUTE:
-lfit = linearfit_xy_errors(μₑ, η; σX=σμₑ, σY=ση, r=r, isplot=true)
+stxy = linearfit_xy_errors(μₑ, η; σX=σμₑ, σY=ση, r=r, isplot=true)
 
+
+# PLOT:
+plotlinfitxy(μₑ, η; σX=σμₑ, σY=ση, r=r, st=stxy)
+
+# If assuming only erros in Y or in X:
+sty = linearfit_xy_errors(μₑ, η; σX=0, σY=ση, r=r)
+stx = linearfit_xy_errors(μₑ, η; σX=σμₑ, σY=0, r=r)
+
+dX = diff([extrema(μₑ)...])[1]/7
+x1, x2 = (-dX, dX) .+ extrema(μₑ)
+xx = [x1; X; x2]
+plot!(xx, sty.a .+ sty.b*xx, color=:lime, lw=0.5, label="LinearFitXY (Y errors)");
+plot!(xx, stx.a .+ stx.b*xx, color=:orange, lw=0.5, label="LinearFitXY (X errors)");
+
+@printf("LinearFitXY (Y errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*X", sty.a, sty.σa, sty.b, sty.σb);
+@printf("Pearson r = %.2f; Goodness of fit = %.2f", sty.ρ, sty.S)
+
+@printf("LinearFitXY (X errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*X", stx.a, stx.σa, stx.b, stx.σb);
+@printf("Pearson r = %.2f; Goodness of fit = %.2f", stx.ρ, stx.S)
 
 
 # Compare with LsqFit:
