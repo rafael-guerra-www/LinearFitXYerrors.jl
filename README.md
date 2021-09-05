@@ -1,13 +1,18 @@
 # LinearFitXYerrors.jl
 
-This Julia package performs 1D linear fitting to experimental data: Y = a + b*Y\
-The input data can have errors in both X and Y (error ellipses)\
-The errors can be correlated and a bivariate Gaussian distribution is assumed.
+This Julia package performs 1D linear fitting to experimental data with uncertainties in both X and Y:
 
-This package estimates:
-- The slope `b` and intercept `a` and their uncertainties
+            Y = a + b*X               [1]
+
+The X and Y errors (error ellipses) can be correlated, a bivariate Gaussian distribution is assumed.
+If no errors provided, or only in X or only in Y, the results are equivalent to [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
+The package is based on York (1966) and York et al. (2004). See references for further details.
+
+The package delivers:
+- The intercept `a`, the slope `b` and their uncertainties
 - Goodness of fit
 - Pearson's correlation coefficient
+- Plot recipe to display fit results with error ellipses
 
 The default argument `plot=false` can be turned on to plot the results.\
 Currently `using Plots.jl; gr()` is used.\
