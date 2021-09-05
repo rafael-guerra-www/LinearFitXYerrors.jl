@@ -30,13 +30,13 @@ The package delivers:
 The default argument `plot=false` can be turned on to plot the results.\
 Currently `using Plots.jl; gr()` is used.
 
-
+##
 ## Installation
 ```julia
 julia> ] add https://github.com/rafael-guerra-www/LinearFitXYerrors.jl
 julia> using LinearFitXYerrors
 ```
-
+##
 ## Useage
 ```julia
 a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY)
@@ -44,8 +44,7 @@ a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
 a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
 ```
 
-
-
+##
 ## References:
 *Amen, S.K. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas*
 
@@ -57,9 +56,9 @@ a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
 
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
-
+##
 ## Example-1: uncorrelated errors
 ![LinearFitXYerrors_example1b](https://user-images.githubusercontent.com/20739393/131935054-eab90824-c892-485c-9dd3-e26d61b434e7.png)
-
+##
 ## Example-2: correlated errors
 ![LinearFitXYerrors_example2](https://user-images.githubusercontent.com/20739393/131934790-68da2f2e-b132-4d65-89a6-54e92c324db2.png)
