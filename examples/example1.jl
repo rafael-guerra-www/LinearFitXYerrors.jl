@@ -1,4 +1,4 @@
-##############   EXAMPLE-1a     ##############
+##############   EXAMPLE-1    ##############
 
 using LinearFitXYerrors
 

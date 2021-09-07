@@ -13,8 +13,6 @@ struct stfit
   end
 
 
-# TODO: confidence_intervals
-
 """
 # stfit = linearfit_xy_errors(X,Y,σX,σY; r=0)
 #
@@ -50,51 +48,76 @@ struct stfit
 #
 #
 """
-function linearfit_xy_errors(X::AbstractArray{<:Real}, Y::AbstractArray{<:Real}; σX=0, σY=0, r=0, isplot=false)
+function linearfit_xy_errors(X, Y; σX=0, σY=0, r=0, isplot=false)
 
-    Nmax = 50;                  # maximum number of iterations
-    tol = 1e-15;                #relative tolerance to stop at
-    N =   length(X)
-    length(σX) == 1 && (σX = (1e-20 + σX)*ones(N))
-    length(σY) == 1 && (σY = (1e-20 + σY)*ones(N))
-    length(r) == 1 && (r = r*ones(N))
-    
-    b = Y\X                     # initial guess for b:
+    if σX == 0 && σY == 0
+        N =   length(X)
+        σX = σY = zeros(N)
+        length(r) == 1  &&  (r = r*ones(N))
+        
+        b = Y \ X
+        X̄ = mean(X)
+        Ȳ = mean(Y)
+        a = Ȳ - b*X̄
+        u = X .- X̄                  # v = Y .- Ȳ    
+        Ŝ = sqrt(sum((Y - b*X .- a).^2)/(N-2))  # goodness of fit
+        σb = sqrt(1/sum(u.^2))
+        σa = sqrt(1 + X̄^2 * σb^2) 
 
-    bᵢ = zeros(Nmax+1);         #vector to save b iterations in
-    bᵢ[1] = b
-    X̄ = 0; Ȳ = 0;
-    β = zeros(N)
-    W = zeros(N)
-    local i
-    for outer i = 1:Nmax        # KEY TRICK
-        ωX = 1 ./σX.^2
-        ωY = 1 ./σY.^2
-        α = sqrt.(ωX .* ωY)
-        W .= ωX .* ωY ./(ωX + b^2 * ωY - 2*b * r .* α)
-        X̄ = sum(W .* X)/sum(W)
-        Ȳ = sum(W .* Y)/sum(W)
-        U = X .- X̄
-        V = Y .- Ȳ
-        β .= W .*(U ./ ωY + b * V ./ ωX - (b * U + V) .* r ./ α)
-        b = sum(W .* β .* V)/sum(W .* β .* U)
-        bᵢ[i+1] = b
-        abs((bᵢ[i+1] - bᵢ[i])/bᵢ[i+1]) < tol && break
+        # Pearson's correlation coefficient:
+        ρ = cov(X,Y)/sqrt(var(X) * var(Y)) 
+
+        # standard error *Ŝ factor defined in Cantrell (2008)
+        st = stfit(a, b, σa*Ŝ, σb*Ŝ, Ŝ, ρ, [b], 1)
+
+    else
+        Nmax = 50;                  # maximum number of iterations
+        tol = 1e-15;                #relative tolerance to stop at
+        N =   length(X)
+        
+        σX == 0 && (σX = 1e-16)
+        σY == 0 && (σY = 1e-16)
+        length(σX) == 1 &&  (σX = σX*ones(N))
+        length(σY) == 1 &&  (σY = σY*ones(N))
+        length(r) == 1  &&  (r = r*ones(N))
+        
+        b = Y\X                     # initial guess for b:
+
+        bᵢ = zeros(Nmax+1);         #vector to save b iterations in
+        bᵢ[1] = b
+        X̄ = 0; Ȳ = 0;
+        β = zeros(N)
+        W = zeros(N)
+        local i
+        for outer i = 1:Nmax        # KEY TRICK
+            ωX = 1 ./σX.^2
+            ωY = 1 ./σY.^2
+            α = sqrt.(ωX .* ωY)
+            W .= ωX .* ωY ./(ωX + b^2 * ωY - 2*b * r .* α)
+            X̄ = sum(W .* X)/sum(W)
+            Ȳ = sum(W .* Y)/sum(W)
+            U = X .- X̄
+            V = Y .- Ȳ
+            β .= W .*(U ./ ωY + b * V ./ ωX - (b * U + V) .* r ./ α)
+            b = sum(W .* β .* V)/sum(W .* β .* U)
+            bᵢ[i+1] = b
+            abs((bᵢ[i+1] - bᵢ[i])/bᵢ[i+1]) < tol && break
+        end
+        a = Ȳ - b*X̄
+        x = X̄ .+ β                  # y = Ȳ + b*β
+        X̄ = sum(W .* x)/sum(W)      # Ȳ = sum(W .* y)/sum(W)
+        u = x .- X̄                  # v = y .- Ȳ    
+        Ŝ = sqrt(sum(W .* (Y - b*X .- a).^2) /(N-2))  # goodness of fit
+        σb = sqrt(1/sum(W .* u.^2))
+        σa = sqrt(1/sum(W) + X̄^2 * σb^2) 
+
+        # See Wikipedia Regression dilution (Pearson's correlation coefficient with errors in variables)
+        vX = var(X); vY = var(Y)
+        ρ = cov(X,Y)/sqrt(vX*vY) * sqrt(vX/(vX + var(σX))) * sqrt(vY/(vY + var(σY))) 
+
+        # standard error *Ŝ factor defined in Cantrell (2008)
+        st = stfit(a, b, σa*Ŝ, σb*Ŝ, Ŝ, ρ, bᵢ, i)
     end
-    a = Ȳ - b*X̄
-    x = X̄ .+ β                  # y = Ȳ + b*β
-    X̄ = sum(W .* x)/sum(W)      # Ȳ = sum(W .* y)/sum(W)
-    u = x .- X̄                  # v = y .- Ȳ    
-    Ŝ = sqrt(sum(W .* (Y - b*X .- a).^2) /(N-2))  # goodness of fit
-    σb = sqrt(1/sum(W .* u.^2))
-    σa = sqrt(1/sum(W) + X̄^2 * σb^2) 
-
-    # See Wikipedia Regression dilution (Pearson's correlation coefficient with errors in variables)
-    vX = var(X); vY = var(Y)
-    ρ = cov(X,Y)/sqrt(vX*vY) * sqrt(vX/(vX + var(σX))) * sqrt(vY/(vY + var(σY))) 
-
-    # standard error *Ŝ factor defined in Cantrell (2008)
-    st = stfit(a, b, σa*Ŝ, σb*Ŝ, Ŝ, ρ, bᵢ, i)
 
     if isplot
         plotlinfitxy(X, Y; σX, σY, r, st)

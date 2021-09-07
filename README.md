@@ -50,7 +50,9 @@ a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
 
 *Regression dilution, https://en.wikipedia.org/wiki/Regression_dilution*
 
-*York, D. [1966] LEAST-SQUARES FITTING OF A STRAIGHT LINE. Canadian Journal of Physics, 44(5), pp.1079–1086*
+*Titterington, D. and Halliday, A. [1979] On the fitting of parallel isochrons and the method of maximum likelihood. Chemical Geology, 26(3), pp.183-195*
+
+*York, D. [1966] Least-squares fitting of a straight line. Canadian Journal of Physics, 44(5), pp.1079–1086*
 
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 

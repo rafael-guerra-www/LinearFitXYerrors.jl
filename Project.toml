@@ -3,6 +3,13 @@ uuid = "f30eeb3b-f5f0-4632-88ad-a7e11dd3714b"
 authors = ["Rafael Guerra <rafael.guerra.www@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+Measures = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
 [compat]
 julia = "1"
 
