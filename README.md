@@ -39,18 +39,19 @@ julia> using LinearFitXYerrors
 ##
 ## Useage
 ```julia
-# regression results are in the fields of structure st:
+# regression results are in the fields of the returned st structure:
+
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
 st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlateed (r=0); plot with ratio=1
 
-st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto) # # X-Y errors not correlateed (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlateed (r=0); plot with ratio=1
 ```
 
 ##
 ## References:
 
-*Altman, D. and Gardner, M. [1988] Statistics in Medicine: Calculating confidence intervals for regression and correlation. British Medical Journal (Clinical research ed.), [online] 296(6631), pp.1238–1242.*
+*Altman, D. and Gardner, M. [1988] Statistics in Medicine: Calculating confidence intervals for regression and correlation. British Medical Journal, 296(6631), pp.1238–1242.*
 
 *Amen, S.K. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas*
 

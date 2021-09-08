@@ -4,7 +4,7 @@ using Statistics
 using Distributions
 using Printf
 using Measures
-using Plots; gr()
+using Plots; gr()    # TODO: define Plot recipe instead
 
 
 
@@ -13,10 +13,9 @@ default(fontfamily=plot_font,framestyle=:axes,yminorgrid=true, legendtitlefontsi
     legendfontsize=6, guidefont=(7,:black),tickfont=(6,:black),size=(600,400),dpi=300, margin=0mm,
     titlefont = (6, plot_font))
 
-include("./linearfitxy.jl")
+include(joinpath(@__DIR__,"src/linearfitxy.jl"))
 
 export linearfitxy
-export plot_linfitxy
 
 end 
 
