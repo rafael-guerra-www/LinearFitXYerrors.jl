@@ -1,5 +1,10 @@
 # linearfitxy.jl
 
+# set plotting defaults
+plot_font = "Computer Modern";
+default(fontfamily=plot_font,framestyle=:axes,yminorgrid=true, legendtitlefontsize=6,fg_color_legend=nothing,
+    legendfontsize=6, guidefont=(7,:black),tickfont=(6,:black),size=(600,400),dpi=300, margin=0mm,
+    titlefont = (6, plot_font))
 
 struct stfit
     a   :: Float64
@@ -15,8 +20,25 @@ struct stfit
   end
 
 
-"""
-Regression results are in the fields of the returned st structure:
+"""    
+Performs 1D linear fitting of experimental data with uncertainties in  X and Y:
+
+- Linear fit:             Y = a + b*X                             [1]
+- Errors:                 X ± σX;  Y ± σY                         [2]
+- Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)          [3]
+
+where:
+- `X` and `Y` are input data vectors with length ≥ 3
+- Optional standard deviation errors `σX` and `σY` are vectors or scalars
+- Optional `r` is the correlation between the `σX` and `σY` errors\
+`r` can be a vector or scalar
+
+For the `σX` and `σY` errors (error ellipses) a bivariate Gaussian distribution is assumed.\
+If no errors are provided, or if only `σX` or `σY` are provided, then the results are equivalent to those obtained using the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
+
+Based on York et al. (2004) with extensions (confidence intervals, diluted correlation coefficient).
+
+Examples of usage:
 ```julia
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
@@ -24,26 +46,8 @@ st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlateed (r
 
 st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlateed (r=0); plot with
 ```
-This Julia package, based on York (1966) and York et al. (2004), performs 1D linear fitting of experimental data with uncertainties in both X and Y:
 
-            Linear fit:             Y = a + b*X                             [1]
-            
-            Errors:                 X ± σX;  Y ± σY                         [2]
-            
-            Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)          [3]
-
-where:
-- `X` and `Y` are input data vectors with length ≥ 2
-- Optional standard deviation errors `σX` and `σY` are vectors or scalars
-- Optional `r` is the correlation between the `σX` and `σY` errors\
-           `r` can be a vector or scalar
-
-For the `σX` and `σY` errors (error ellipses) a bivariate Gaussian distribution is assumed.\
-If no errors are provided, or if only `σX` or `σY` are provided, then the results are equivalent to those obtained using the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
-
-`LinearFitXYerrors.jl` is based on York (1966) and York et al. (2004). See references for further details.
-
-The package computes:
+The results are in the fields of the returned st structure.:
 - The intercept `a`, the slope `b` and their uncertainties `σa` and `σb`
 - `σa95` and `σb95`: 95%-confidence interval uncertainties corrected by two-tailed t-Student distribution, e.g.: `b ± σb95 = b ± t(0.975,N-2)*σb`
 - Goodness of fit `S` (reduced Χ² test): the underlying quantity has Χ² distribution with N-2 degrees of freedom\
@@ -196,5 +200,7 @@ function  plot_linfitxy(X, Y; σX=0, σY=0, r=0, st::stfit, ratio=1)
     
     if σX != 0 && σY != 0
         plot_covariance_ellipses!(X, Y, σX.^2, covXY, σY.^2; lc=:grey)
+    elseif σX == 0 && σY == 0
+        plot!(xlims=extrema(X))
     end
 end
