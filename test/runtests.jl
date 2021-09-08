@@ -3,20 +3,42 @@ using Test
 
 @testset "LinearFitXYerrors.jl" begin
 
-    # 0 - TEST DATA WITH NO ERRORS
+
+    # 0a - TEST DATA WITH NO ERRORS
+    # INPUT DATA:  http://pba.ucdavis.edu/files/45007.pdf
+
     X = [16.4, 17.2, 17.6, 18.0, 18.2, 18.5]
     Y = [2.67, 2.75, 2.99, 3.14, 3.88, 4.23]
 
-    # least squares solution: -9.4628 + 0.7218*X 
+    stxy = linearfitxy(X,Y)
 
-    stxy = linearfit_xy_errors(X,Y)
+    @test   stxy.a    ≈ -9.4628187535736
+    @test   stxy.b    ≈  0.7217838765009
+    @test   stxy.σa   ≈  3.6596191146816
+    @test   stxy.σb   ≈  0.2071823670235
+    @test   stxy.σa95 ≈ 10.1607315778461
+    @test   stxy.σb95 ≈  0.5752304688056
+    @test   stxy.S    ≈  0.3537301433210
+    @test   stxy.ρ    ≈  0.8672492974278
 
-    @test   stxy.a  ≈ -11.0112760092831
-    @test   stxy.b  ≈   0.8095151657762
-    @test   stxy.σa ≈   3.8235425615120
-    @test   stxy.σb ≈   0.2164698117376
-    @test   stxy.S  ≈   2.8103088110572e19
-    @test   stxy.ρ  ≈   0.8672492974278
+
+    # 0b - TEST DATA WITH NO ERRORS
+    # INPUT DATA:  Table I from Altman and Gardner [1988]
+
+    X = [91., 104, 107, 107, 106, 100, 92, 92, 105, 108]
+    Y = [9.8, 7.4, 7.9, 8.3, 8.3, 9.0, 9.7, 8.8, 7.6, 6.9]
+
+    stxy = linearfitxy(X,Y)
+  
+    @test   stxy.a    ≈ 20.1891143911439
+    @test   stxy.b    ≈ -0.1167896678967
+    @test   stxy.σa   ≈  2.6713186714425
+    @test   stxy.σb   ≈  0.0263407280356
+    @test   stxy.σa95 ≈  6.1600719027946
+    @test   stxy.σb95 ≈  0.0607418277744
+    @test   stxy.S    ≈  0.5484946692667
+    @test   stxy.ρ    ≈ -0.8430654646904
+
 
 
     # 1 - TEST UNCORRELATED ERRORS
@@ -32,7 +54,7 @@ using Test
     σY = 1 ./ sqrt.([1., 1.8, 4, 8, 20, 20, 70, 70, 100, 500])
     r = 0*X;
 
-    stxy = linearfit_xy_errors(X,Y; σX=σX, σY=σY, r=r)
+    stxy = linearfitxy(X,Y; σX=σX, σY=σY, r=r)
 
     @test   stxy.a  ≈  5.47991022403286
     @test   stxy.b  ≈ -0.48053340744620
@@ -85,7 +107,7 @@ using Test
 
 
     # COMPUTE:
-    stxy = linearfit_xy_errors(μₑ, η; σX=σμₑ, σY=ση, r=r, isplot=false)
+    stxy = linearfitxy(μₑ, η; σX=σμₑ, σY=ση, r=r, isplot=false)
 
     @test   stxy.a  ≈ -21.9553309045508
     @test   stxy.b  ≈   1.1762288806682

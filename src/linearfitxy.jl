@@ -1,20 +1,22 @@
-# linearfit_xy_errors.jl
+# linearfitxy.jl
 
 
 struct stfit
-    a  :: Float64
-    b  :: Float64
-    σa :: Float64
-    σb :: Float64
-    S  :: Float64
-    ρ  :: Float64
-    bᵢ :: Vector{Float64}
-    i  :: Int64
+    a   :: Float64
+    b   :: Float64
+    σa  :: Float64
+    σb  :: Float64
+    σa95:: Float64
+    σb95:: Float64
+    S   :: Float64
+    ρ   :: Float64
+    bᵢ  :: Vector{Float64}
+    i   :: Int64
   end
 
 
 """
-# stfit = linearfit_xy_errors(X,Y,σX,σY; r=0)
+# stfit = linearfitxy(X,Y,σX,σY; r=0)
 #
 #       Y = a + bX     : linear fit with errors in both X & Y
 #
@@ -48,32 +50,34 @@ struct stfit
 #
 #
 """
-function linearfit_xy_errors(X, Y; σX=0, σY=0, r=0, isplot=false)
+function linearfitxy(X, Y; σX=0, σY=0, r=0, isplot=false, ratio=1)
+    
+    N =   length(X)
+    d = TDist(N-2)     # t-Student distribution with N-2 degrees of freedom
+    cf = quantile(d, 0.975)  # correction factor for 95% confidence intervals (two-tailed distribution)
 
-    if σX == 0 && σY == 0
-        N =   length(X)
+    if (σX == 0) && (σY == 0)
         σX = σY = zeros(N)
         length(r) == 1  &&  (r = r*ones(N))
         
-        b = Y \ X
-        X̄ = mean(X)
-        Ȳ = mean(Y)
-        a = Ȳ - b*X̄
-        u = X .- X̄                  # v = Y .- Ȳ    
+        M = [ones(N) X]
+        (a, b) = M \ Y
+        X̄ = mean(X)    # Ȳ = mean(Y)
+
+        # standard error * Ŝ factor defined in Cantrell (2008)
         Ŝ = sqrt(sum((Y - b*X .- a).^2)/(N-2))  # goodness of fit
-        σb = sqrt(1/sum(u.^2))
-        σa = sqrt(1 + X̄^2 * σb^2) 
+        σb = sqrt(1/sum((X .- X̄ ).^2))
+        σa = Ŝ * sqrt(1/N + X̄^2 * σb^2)
+        σb *= Ŝ 
 
         # Pearson's correlation coefficient:
-        ρ = cov(X,Y)/sqrt(var(X) * var(Y)) 
+        ρ = cov(X,Y)/sqrt(var(X) * var(Y))
 
-        # standard error *Ŝ factor defined in Cantrell (2008)
-        st = stfit(a, b, σa*Ŝ, σb*Ŝ, Ŝ, ρ, [b], 1)
+        st = stfit(a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, [b], 1)
 
     else
         Nmax = 50;                  # maximum number of iterations
         tol = 1e-15;                #relative tolerance to stop at
-        N =   length(X)
         
         σX == 0 && (σX = 1e-16)
         σY == 0 && (σY = 1e-16)
@@ -81,8 +85,8 @@ function linearfit_xy_errors(X, Y; σX=0, σY=0, r=0, isplot=false)
         length(σY) == 1 &&  (σY = σY*ones(N))
         length(r) == 1  &&  (r = r*ones(N))
         
-        b = Y\X                     # initial guess for b:
-
+        M = [ones(N) X]
+        (a, b) = M \ Y              # initial guess for b
         bᵢ = zeros(Nmax+1);         #vector to save b iterations in
         bᵢ[1] = b
         X̄ = 0; Ȳ = 0;
@@ -106,25 +110,27 @@ function linearfit_xy_errors(X, Y; σX=0, σY=0, r=0, isplot=false)
         a = Ȳ - b*X̄
         x = X̄ .+ β                  # y = Ȳ + b*β
         X̄ = sum(W .* x)/sum(W)      # Ȳ = sum(W .* y)/sum(W)
-        u = x .- X̄                  # v = y .- Ȳ    
+
+        # standard error *Ŝ factor defined in Cantrell (2008)
         Ŝ = sqrt(sum(W .* (Y - b*X .- a).^2) /(N-2))  # goodness of fit
-        σb = sqrt(1/sum(W .* u.^2))
-        σa = sqrt(1/sum(W) + X̄^2 * σb^2) 
+        σb = sqrt(1/sum(W .* (x .- X̄).^2))
+        σa = Ŝ * sqrt(1/sum(W) + X̄^2 * σb^2)
+        σb *= Ŝ
 
         # See Wikipedia Regression dilution (Pearson's correlation coefficient with errors in variables)
         vX = var(X); vY = var(Y)
         ρ = cov(X,Y)/sqrt(vX*vY) * sqrt(vX/(vX + var(σX))) * sqrt(vY/(vY + var(σY))) 
 
-        # standard error *Ŝ factor defined in Cantrell (2008)
-        st = stfit(a, b, σa*Ŝ, σb*Ŝ, Ŝ, ρ, bᵢ, i)
+        st = stfit(a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, bᵢ, i)
     end
 
     if isplot
-        plotlinfitxy(X, Y; σX, σY, r, st)
+        plot_linfitxy(X, Y; σX, σY, r, st, ratio=ratio)
     end
 
-    @printf("LinearFitXY (X-Y errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*μe", a,  σa, b, σb)
-    @printf("Pearson ρ = %.2f;  Goodness of fit = %.2f", ρ, Ŝ)
+    @printf("\n>>> ± σ: Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a,  σa, b, σb)
+    @printf(">>> ± 95%% CI): Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a, cf*σa, b, cf*σb)
+    @printf(">>> Pearson ρ = %.3f;  Goodness of fit = %.3f \n\n", ρ, Ŝ)
 
     return st
 end
@@ -153,14 +159,15 @@ function plot_covariance_ellipses!(X, Y, a,  b, c; lc=:lightgrey, lw=0.3)
 end
 
 
-function  plotlinfitxy(X, Y; σX=0, σY=0, r=0, st::stfit)
+function  plot_linfitxy(X, Y; σX=0, σY=0, r=0, st::stfit, ratio=1)
     covXY = σX .* σY .* r
     # sort data because of ribbon:
     I = sortperm(X);
     X = X[I];  Y = Y[I]; σX = σX[I];  σY = σY[I]; covXY = covXY[I];
 
-    str1 = @sprintf("LinearFitXY (X-Y errors): Y = (%.4f +/- %.4f) + (%.4f +/- %.4f)*X", st.a, st.σa, st.b, st.σb)
-    str2 = @sprintf("\nPearson r = %.2f; Goodness of fit = %.2f", st.ρ, st.S)
+    str1 = @sprintf("[± σ]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", st.a, st.σa, st.b, st.σb)
+    str2 = @sprintf("\n[± 95%% CI]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", st.a, st.σa95, st.b, st.σb95)
+    str3 = @sprintf("\nPearson ρ = %.2f; Goodness of fit = %.2f", st.ρ, st.S)
 
     dX = diff([extrema(X)...])[1]/7    # extends plot x-axis by 1/7 each side
     x1, x2 = (-dX, dX) .+ extrema(X)
@@ -168,14 +175,22 @@ function  plotlinfitxy(X, Y; σX=0, σY=0, r=0, st::stfit)
     tl, bl = (st.a - st.σa) .+ (st.b + st.σb)*xx,  (st.a + st.σa) .+ (st.b - st.σb)*xx
     σp, σm = maximum([tl bl], dims=2) .-  (st.a .+ st.b*xx),  (st.a .+ st.b*xx) .- minimum([tl bl], dims=2)
 
+    #TODO: confirm 95%-confidence interval computation for full X-Y errors
+    mx = mean(X)
+    dx2 = (X .- mx).^2
+    cf = st.σb95 /st.σb   # to reuse already computed t-Student quantile
+    σx95 = cf * st.S * sqrt.(1/length(X) .+ dx2/sum(dx2))
 
-    plot(xlims=(x1,x2), ylims=(0,13), title=str1*str2, ratio=1, legend=:outerbottomright)
-    plot!(xx, st.a .+ st.b*xx, color=:lightblue, ribbon=(σp,σm), label=false)
-    plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="μe", ylabel="Y", label="LinearFitXY")
+    plot(xlims=(x1,x2), ylims=(0,13), title=str1*str2*str3, ratio=ratio, legend=:outerbottomright)
+    scatter!([x1-dX x1-dX],[0 0], mc=[:lightblue :reds], label=["95% confidence interval" "Y=(a ± σa)+(b ± σb)*X"], marker=:rect)
+    plot!([x1-dX],[0], lc=:white, label=" ")   # adds space in legend
+    plot!(X, st.a .+ st.b*X, color=:lightblue, ribbon=(σx95,σx95), label=false)
+    plot!(xx, st.a .+ st.b*xx, color=:reds, ribbon=(σp,σm), label=false)
+    plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="X", ylabel="Y", label="LinearFitXY")
     scatter!(X, Y, msw=0.1, ms=1., msc=:lightgrey, xerror= σX, yerror= σY, label=false)
     scatter!(X, Y, msw=0.1, ms=1.5, mc=:blue, label=false)
-
-    plot_covariance_ellipses!(X, Y, σX.^2, covXY, σY.^2; lc=:grey)
+    
+    if σX != 0 && σY != 0
+        plot_covariance_ellipses!(X, Y, σX.^2, covXY, σY.^2; lc=:grey)
+    end
 end
-
-

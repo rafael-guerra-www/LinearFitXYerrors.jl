@@ -2,11 +2,11 @@
 
 This Julia package, based on York (1966) and York et al. (2004), performs 1D linear fitting of experimental data with uncertainties in both X and Y:
 
-            Linear fit:             Y = a + b*X                         [1]
+            Linear fit:             Y = a + b*X                             [1]
             
-            Errors:                 X ± σX;  Y ± σY                     [2]
+            Errors:                 X ± σX;  Y ± σY                         [2]
             
-            Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)            [3]
+            Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)          [3]
 
 where:
 - `X` and `Y` are input data vectors with length ≥ 2
@@ -19,11 +19,13 @@ If no errors are provided, or if only `σX` or `σY` are provided, then the resu
 
 `LinearFitXYerrors.jl` is based on York (1966) and York et al. (2004). See references for further details.
 
-The package delivers:
-- The intercept `a`, the slope `b` and their uncertainties
-- Goodness of fit `Ŝ`, perfect linear fit if `Ŝ = 1`
+The package computes:
+- The intercept `a`, the slope `b` and their uncertainties `σa` and `σb`
+- `σa95` and `σb95`: 95%-confidence interval uncertainties corrected by two-tailed t-Student distribution, e.g.: `b ± σb95 = b ± t(0.975,N-2)*σb`
+- Goodness of fit `S` (reduced Χ² test): the underlying quantity has Χ² distribution with N-2 degrees of freedom\
+  `S ~ 1`: fit consistent with errors, `S > 1`: poor fit, `S >> 1`: errors underestimated, `S < 1`: errors overestimated
 - Pearson's correlation coefficient `ρ` that accounts for data errors
-- Plot recipe to display fit results with error ellipses
+- Optional display of fit results with error ellipses and confidence intervals
 
 The default argument `isplot=false` can be turned on to plot the results.\
 Currently `using Plots.jl; gr()` is used.
@@ -37,18 +39,28 @@ julia> using LinearFitXYerrors
 ##
 ## Useage
 ```julia
-a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY)
-a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
-a, b, σa, σb, S, ρ = linearfit_xy_errors(X, Y, σX, σY; r=0, plot=false)
+# regression results are in the fields of structure st:
+st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
+
+st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlateed (r=0); plot with ratio=1
+
+st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto) # # X-Y errors not correlateed (r=0); plot with ratio=1
 ```
 
 ##
 ## References:
+
+*Altman, D. and Gardner, M. [1988] Statistics in Medicine: Calculating confidence intervals for regression and correlation. British Medical Journal (Clinical research ed.), [online] 296(6631), pp.1238–1242.*
+
 *Amen, S.K. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas*
 
 *Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487*
 
-*Regression dilution, https://en.wikipedia.org/wiki/Regression_dilution*
+*Mahon, K. [1996] The New “York” Regression: Application of an Improved Statistical Method to Geochemistry. International Geology Review, 38(4), pp.293–303*
+
+*Reduced Chi-aquared Test: https://en.wikipedia.org/wiki/Reduced_chi-squared_statistic*
+
+*Regression dilution: https://en.wikipedia.org/wiki/Regression_dilution*
 
 *Titterington, D. and Halliday, A. [1979] On the fitting of parallel isochrons and the method of maximum likelihood. Chemical Geology, 26(3), pp.183-195*
 
