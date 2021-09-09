@@ -9,7 +9,7 @@ This Julia package, based on York (1966) and York et al. (2004), performs 1D lin
             Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)          [3]
 
 where:
-- `X` and `Y` are input data vectors with length ≥ 2
+- `X` and `Y` are input data vectors with length ≥ 3
 - Optional standard deviation errors `σX` and `σY` are vectors or scalars
 - Optional `r` is the correlation between the `σX` and `σY` errors\
            `r` can be a vector or scalar
@@ -39,7 +39,7 @@ julia> using LinearFitXYerrors
 ##
 ## Useage
 ```julia
-# regression results are in the fields of the returned st structure:
+# The input data and regression results are returned in the fields of the `st` structure:
 
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
