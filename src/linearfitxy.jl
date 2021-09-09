@@ -200,7 +200,7 @@ function  plot_linfitxy(st::stfitxy; ratio=1)
     cf = st.σb95 /st.σb   # to reuse already computed t-Student quantile
     σx95 = cf * st.S * sqrt.(1/length(X) .+ dx2/sum(dx2))
 
-    plot(xlims=(x1,x2), ylims=(0,13), title=str1*str2*str3, ratio=ratio, legend=:outerbottomright)
+    plot(xlims=(x1,x2), title=str1*str2*str3, ratio=ratio, legend=:outerbottomright)
     scatter!([x1-dX x1-dX],[0 0], mc=[:lightblue :reds], label=["95% confidence interval" "Y=(a ± σa)+(b ± σb)*X"], marker=:rect)
     plot!([x1-dX],[0], lc=:white, label=" ")   # adds space in legend
     plot!(X, st.a .+ st.b*X, color=:lightblue, ribbon=(σx95,σx95), label=false)
