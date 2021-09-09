@@ -43,9 +43,9 @@ julia> using LinearFitXYerrors
 
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
-st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlateed (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlated (r=0); plot with ratio=1
 
-st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlateed (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlated (r=0); plot with ratio=1
 ```
 
 ##
