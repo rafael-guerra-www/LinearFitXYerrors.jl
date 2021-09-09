@@ -45,12 +45,9 @@ cov_μₑ_η = M[:,6]   # covariance between errors in μₑ and η
 r = cov_μₑ_η ./ (σμₑ .* ση )   # correlation coefficient between errors
 
 
-# COMPUTE:
+# COMPUTE and PLOT:
 stxy = linearfitxy(μₑ, η; σX=σμₑ, σY=ση, r=r, isplot=true)
 
-
-# PLOT:
-plot_linfitxy(stxy)
 
 
 # If assuming no errors:
