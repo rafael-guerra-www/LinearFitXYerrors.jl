@@ -1,11 +1,13 @@
 # LinearFitXYerrors.jl
 
-This Julia package, based on York (1966) and York et al. (2004), performs 1D linear fitting of experimental data with uncertainties in both X and Y:
+<img src="https://user-images.githubusercontent.com/20739393/132685450-1a34351f-ad02-49ee-9d57-b498437e356a.png" width="320" />
+
+This small Julia package, based on York (1966) and York et al. (2004), performs 1D linear fitting of experimental data with uncertainties in both X and Y:
 
             Linear fit:             Y = a + b*X                             [1]
             
             Errors:                 X ± σX;  Y ± σY                         [2]
-            
+
             Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)          [3]
 
 where:
@@ -43,9 +45,9 @@ julia> using LinearFitXYerrors
 
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
-st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlateed (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlated (r=0); plot with ratio=1
 
-st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlateed (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlated (r=0); plot with ratio=1
 ```
 
 ##
