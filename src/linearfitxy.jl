@@ -65,8 +65,7 @@ function linearfitxy(X, Y; σX=0, σY=0, r=0, isplot=false, ratio=1)
     cf = quantile(d, 0.975)  # correction factor for 95% confidence intervals (two-tailed distribution)
 
     if (σX == 0) && (σY == 0)
-        σX = σY = zeros(N)
-        length(r) == 1  &&  (r = r*ones(N))
+        σX = σY = r = zeros(N)
         
         M = [ones(N) X]
         (a, b) = M \ Y
