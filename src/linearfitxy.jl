@@ -34,26 +34,26 @@ Performs 1D linear fitting of experimental data with uncertainties in  X and Y:
 - Optional `r` is the correlation between the ``σX`` and ``σY`` errors
 `r` can be a vector or scalar
 
-For the ``σX`` and ``σY`` errors (error ellipses) a bivariate Gaussian distribution is assumed.
-If no errors are provided, or if only ``σX`` or ``σY`` are provided, then the results are equivalent
-to those obtained using the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
+``σX`` and ``σY`` errors (error ellipses) with bivariate Gaussian distribution assumed.
+If no errors, or if only ``σX`` or ``σY`` are provided, then the results are equivalent
+to those from the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
 
-Based on York et al. (2004) with extensions (confidence intervals, diluted correlation coefficient).
+Based on York et al. (2004) with extensions (confidence intervals, diluted corr. coeff.).
 
 # Examples:
 ```julia-repl
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
-st = linearfitxy(X, Y; σX, σY, isplot=true)    # XY errors not correlated (r=0); plot displayed wih ratio=1
+st = linearfitxy(X, Y; σX, σY, isplot=true) # XY errors not correlated (r=0); plot ratio=1
 
-st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto) # XY errors not correlated (r=0); plot result
+linearfitxy(X, Y; σX,σY,r=0,isplot=true,ratio=:auto) # XY errors not correlated (r=0); plot
 ```
 
 The results are in the fields of the returned st::stfitxy structure:
 - The intercept `a`, the slope `b` and their uncertainties `σa` and `σb`
 - ``σa95`` and ``σb95``: 95%-confidence interval using two-tailed t-Student distribution,
     e.g.: ``b ± σb95 = b ± t(0.975,N-2)*σb``
-- Goodness of fit `S` (reduced ``Χ²`` test): underlying quantity has ``Χ²`` N-2 degrees of freedom
+- Goodness of fit `S` (reduced ``Χ²`` test): quantity with ``Χ²`` N-2 degrees of freedom
   `S ~ 1`: fit consistent with errors, `S > 1`: poor fit, `S >> 1`: errors underestimated,
   `S < 1`: overfitting or errors overestimated
 - Pearson's correlation coefficient ``ρ`` that accounts for data errors
