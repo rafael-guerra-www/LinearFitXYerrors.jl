@@ -73,12 +73,15 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 
 ## Example-0: no errors in X and Y
 *Reference: Altman and Gardner (1988)*
+![Example0_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667125-915c4fb8-0b29-438c-a269-efeada647597.png)
 
 ##
 ## Example-1: uncorrelated errors in X and Y
 *References: York (1966) and Cantrell (2008)*
-![LinearFitXYerrors_example1b](https://user-images.githubusercontent.com/20739393/131935054-eab90824-c892-485c-9dd3-e26d61b434e7.png)
+![Example1_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667149-4cacd88a-6d62-409b-b08c-c69e78e671e3.png)
+
 ##
 ## Example-2: correlated errors in X and Y
 *Reference: Amen (2012)*
-![LinearFitXYerrors_example2](https://user-images.githubusercontent.com/20739393/131934790-68da2f2e-b132-4d65-89a6-54e92c324db2.png)
+![Example2_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667167-d4cdf29e-32a0-4e39-a990-5f00165ffc1b.png)
+
