@@ -1,4 +1,4 @@
-#TODO: remove Plots.jl dependency and add a Plots recipe
+#TODO: not used. Plan to remove Plots.jl dependency and add a Plots recipe
 
 @recipe function f(dt::stfitxy,
             framestyle=:axes,
