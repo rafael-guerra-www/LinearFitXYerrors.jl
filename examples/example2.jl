@@ -59,7 +59,7 @@ stx = linearfitxy(μₑ, η; σX=σμₑ, σY=0, r=r)
 
 dX = diff([extrema(μₑ)...])[1]/7
 x1, x2 = (-dX, dX) .+ extrema(μₑ)
-xx = [x1; X; x2]
+xx = [x1; μₑ; x2]
 plot!(xx, st.a .+ st.b*xx, color=:pink, lw=0.5, label="LinearFitXY (no errors)");
 plot!(xx, sty.a .+ sty.b*xx, color=:lime, lw=0.5, label="LinearFitXY (Y errors)");
 plot!(xx, stx.a .+ stx.b*xx, color=:orange, lw=0.5, label="LinearFitXY (X errors)");

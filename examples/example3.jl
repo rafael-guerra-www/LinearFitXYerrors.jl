@@ -26,6 +26,8 @@ r1 = 0  # correlation coefficient between errors
 r2 = 0.7071
 
 # COMPUTE and PLOT:
+st = linearfitxy(X, Y; isplot=true, ratio=:auto)
+
 stxy1 = linearfitxy(X, Y; σX=σX, σY=σY, r=r1, isplot=true, ratio=:auto)
 
 stxy2 = linearfitxy(X, Y; σX=σX, σY=σY, r=r2, isplot=true, ratio=:auto)
