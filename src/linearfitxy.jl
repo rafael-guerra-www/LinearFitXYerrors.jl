@@ -1,12 +1,12 @@
 # linearfitxy.jl
 
-# set plotting defaults
-plot_font = "Computer Modern";
-default(fontfamily=plot_font,framestyle=:axes,yminorgrid=true, legendtitlefontsize=6,fg_color_legend=nothing,
-    legendfontsize=6, guidefont=(7,:black),tickfont=(6,:black),size=(600,400), dpi=300, margin=0mm,
-    titlefont = (6, plot_font))
 
-struct stfit
+struct stfitxy
+    X   :: Vector{Float64}
+    Y   :: Vector{Float64}
+    σX  :: Union{Float64, Vector{Float64}}
+    σY  :: Union{Float64, Vector{Float64}}
+    r   :: Union{Float64, Vector{Float64}}
     a   :: Float64
     b   :: Float64
     σa  :: Float64
@@ -21,7 +21,7 @@ struct stfit
 
 
 """    
-Performs 1D linear fitting of experimental data with uncertainties in  X and Y:
+linearfitxy() performs 1D linear fitting of experimental data with uncertainties in  X and Y:
 
 - Linear fit:             Y = a + b*X                             [1]
 - Errors:                 X ± σX;  Y ± σY                         [2]
@@ -81,7 +81,7 @@ function linearfitxy(X, Y; σX=0, σY=0, r=0, isplot=false, ratio=1)
         # Pearson's correlation coefficient:
         ρ = cov(X,Y)/sqrt(var(X) * var(Y))
 
-        st = stfit(a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, [b], 1)
+        st = stfitxy(X, Y, σX, σY, r, a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, [b], 1)
 
     else
         Nmax = 50;                  # maximum number of iterations
@@ -129,15 +129,15 @@ function linearfitxy(X, Y; σX=0, σY=0, r=0, isplot=false, ratio=1)
         vX = var(X); vY = var(Y)
         ρ = cov(X,Y)/sqrt(vX*vY) * sqrt(vX/(vX + var(σX))) * sqrt(vY/(vY + var(σY))) 
 
-        st = stfit(a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, bᵢ, i)
+        st = stfitxy(X, Y, σX, σY, r, a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, bᵢ, i)
     end
 
     if isplot
-        plot_linfitxy(X, Y; σX, σY, r, st, ratio=ratio)
+        plot_linfitxy(st; ratio=ratio)
     end
 
-    @printf("\n>>> ± σ: Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a,  σa, b, σb)
-    @printf(">>> ± 95%% CI): Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a, cf*σa, b, cf*σb)
+    @printf("\n>>> [± σ]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a,  σa, b, σb)
+    @printf(">>> [± 95%% CI]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a, cf*σa, b, cf*σb)
     @printf(">>> Pearson ρ = %.3f;  Goodness of fit = %.3f \n\n", ρ, Ŝ)
 
     return st
@@ -167,7 +167,14 @@ function plot_covariance_ellipses!(X, Y, a,  b, c; lc=:lightgrey, lw=0.3)
 end
 
 
-function  plot_linfitxy(X, Y; σX=0, σY=0, r=0, st::stfit, ratio=1)
+function  plot_linfitxy(st::stfitxy; ratio=1)
+# set plotting defaults
+    plot_font = "Computer Modern";
+    default(fontfamily=plot_font,framestyle=:axes,yminorgrid=true, legendtitlefontsize=6,fg_color_legend=nothing,
+            legendfontsize=6, guidefont=(7,:black),tickfont=(6,:black),size=(600,400), dpi=300,
+            titlefont = (6, plot_font))
+    
+    X = st.X;  Y = st.Y;  σX = st.σX;  σY = st.σY;  r = st.r;
     covXY = σX .* σY .* r
     # sort data because of ribbon:
     I = sortperm(X);

@@ -53,7 +53,7 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 
 *Altman, D. and Gardner, M. [1988] Statistics in Medicine: Calculating confidence intervals for regression and correlation. British Medical Journal, 296(6631), pp.1238–1242.*
 
-*Amen, S.K. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas*
+*Amen, S. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas*
 
 *Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487*
 
@@ -70,8 +70,15 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 ##
-## Example-1: uncorrelated errors
+
+## Example-0: no errors in X and Y
+*Reference: Altman and Gardner (1988)*
+
+##
+## Example-1: uncorrelated errors in X and Y
+*References: York (1966) and Cantrell (2008)*
 ![LinearFitXYerrors_example1b](https://user-images.githubusercontent.com/20739393/131935054-eab90824-c892-485c-9dd3-e26d61b434e7.png)
 ##
-## Example-2: correlated errors
+## Example-2: correlated errors in X and Y
+*Reference: Amen (2012)*
 ![LinearFitXYerrors_example2](https://user-images.githubusercontent.com/20739393/131934790-68da2f2e-b132-4d65-89a6-54e92c324db2.png)

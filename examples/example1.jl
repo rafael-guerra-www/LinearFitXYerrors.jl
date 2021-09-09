@@ -4,8 +4,10 @@
 using LinearFitXYerrors
 
 # INPUT DATA:
-# Tables I and II from York [1966], data taken from Pearson (1901)
-# also in Cantrell (2008)
+# York, D. [1966] Least-squares fitting of a straight line. Canadian Journal of Physics, 44(5), pp.1079–1086
+# Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487
+
+# Tables I and II from York [1966]
 
 X = [0.0, 0.9, 1.8, 2.6, 3.3, 4.4, 5.2, 6.1, 6.5, 7.4]
 Y = [5.9, 5.4, 4.4, 4.6, 3.5, 3.7, 2.8, 2.8, 2.4, 1.5]
@@ -38,4 +40,5 @@ plot!(xx, stx.a .+ stx.b*xx, color=:orange, lw=0.5, label="LinearFitXY (X errors
 @printf("Pearson ρ = %.2f;  Goodness of fit = %.2f", stx.ρ, sty.S)
 
 
+# savefig("Example1_LinearFitXYerrors.png")
 ########################################
