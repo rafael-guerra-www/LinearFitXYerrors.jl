@@ -21,7 +21,7 @@ If no errors are provided, or if only `σX` or `σY` are provided, then the resu
 
 The package computes:
 - The intercept `a`, the slope `b` and their uncertainties `σa` and `σb`
-- `σa95` and `σb95`: 95%-confidence interval uncertainties using a two-tailed t-Student distribution, e.g.: `b ± σb95 = b ± t(0.975,N-2)*σb`
+- `σa95` and `σb95`: 95%-confidence intervals using a two-tailed t-Student distribution, e.g.: `b ± σb95 = b ± t(0.975,N-2)*σb`
 - Goodness of fit `S` (reduced Χ² test): the underlying quantity has Χ² distribution with N-2 degrees of freedom\
   `S ~ 1`: fit consistent with errors, `S > 1`: poor fit, `S >> 1`: errors underestimated, `S < 1`: overfitting or errors overestimated
 - Pearson's correlation coefficient `ρ` that accounts for data errors
