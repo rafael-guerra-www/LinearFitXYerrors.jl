@@ -53,7 +53,7 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 - The objective for this first package was to learn how to publish a Julia package via Github while implementing York's technique.
 - Currently the confidence interval ribbons are only provided for input data with no errors.
 - The package author is not a statistician and the topics of "errors in variables" and "confidence intervals" are beyond his expertise.
-- While the results seem to be consistent with the references provided, one notable exception is Amen (2012). The latter estimates standard deviation errors for regression in Example-2 that are much smaller than York et al. (2004). The input data in this example have large correlated errors. See the References sectin for further details.
+- While the results seem to be consistent with the references provided, one notable exception is Amen (2012). The latter estimates standard deviation errors for regression in Example-2 that seem to be much smaller than using this package technique (York et al., 2004). The input data in this example have large correlated errors and York's solution seems reasonable (tbc).
 
 
 ##
