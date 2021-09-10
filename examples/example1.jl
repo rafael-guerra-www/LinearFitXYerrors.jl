@@ -41,5 +41,5 @@ plot!(xx, stx.a .+ stx.b*xx, color=:orange, lw=0.5, label="LinearFitXY (X errors
 @printf("Pearson ρ = %.2f;  Goodness of fit = %.2f", stx.ρ, sty.S)
 
 
-# savefig("Example1_LinearFitXYerrors.png")
+savefig("Example1_LinearFitXYerrors.png")
 ########################################

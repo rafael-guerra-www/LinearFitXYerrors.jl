@@ -92,3 +92,6 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 
 ![Example2_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667167-d4cdf29e-32a0-4e39-a990-5f00165ffc1b.png)
 
+
+## Example-3: correlated errors in X and Y
+*Reference: Mahon (1996)*

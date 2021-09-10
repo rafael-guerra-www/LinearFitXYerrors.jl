@@ -202,18 +202,19 @@ function  plot_linfitxy(st::stfitxy; ratio=1)
     cf = quantile(d, 0.975)  # correction factor for 95% confidence intervals (two-tailed distribution)
     σx95 = cf * st.S * sqrt.(1/N .+ (X .- mean(X)).^2 / var(X) /(N-1))
     
-    
-    plot(xlims=(x1,x2), title=str1*str2*str3, ratio=ratio, legend=:outerbottomright)
-    scatter!([x1-dX x1-dX],[Y[1] Y[1]], mc=[:lightblue :reds], label=["95% confidence interval" "Y=(a ± σa)+(b ± σb)*X"], marker=:rect)
-    plot!([x1-dX],[Y[1]], lc=:white, label=" ")   # adds space in legend
-    plot!(X, st.a .+ st.b*X, color=:lightblue, ribbon=(σx95,σx95), label=false)
-    plot!(xx, st.a .+ st.b*xx, color=:reds, ribbon=(σp,σm), label=false)
 
+    p = plot(xlims=(x1,x2), title=str1*str2*str3, ratio=ratio, legend=:outerbottomright)
+    scatter!([x1-dX],[Y[1]], mc=:lightblue, label="Y=(a±σa)+(b±σb)X", marker=:rect)
+    
     #TODO: 95%-confidence interval computation for X-Y errors
     if all(≈(0), σX) && all(≈(0), σY)
-        plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="X", ylabel="Y", label="LinearFitXY")
-        plot!(xlims=extrema(X))
+        scatter!([x1-dX],[Y[1]], mc=:reds, label="95% confidence interval", marker=:rect)
+        plot!(X, st.a .+ st.b*X, color=:reds, ribbon=(σx95,σx95), label=false)
+        plot!(xlims = (-dX, dX)./5 .+ extrema(X))
     end
+    plot!([x1-dX],[Y[1]], lc=:white, label=" ")   # adds space in legend
+    plot!(xx, st.a .+ st.b*xx, color=:lightblue, ribbon=(σp,σm), label=false)
+    plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="X", ylabel="Y", label="LinearFitXY")
 
     scatter!(X, Y, msw=0.1, ms=1., msc=:lightgrey, xerror= σX, yerror= σY, label=false)
     scatter!(X, Y, msw=0.1, ms=1.5, mc=:blue, label=false)
@@ -221,4 +222,5 @@ function  plot_linfitxy(st::stfitxy; ratio=1)
     if !all(≈(0), σX) || !all(≈(0), σY)
         plot_covariance_ellipses!(X, Y, σX.^2, covXY, σY.^2; lc=:grey)
     end
+    display(p)
 end

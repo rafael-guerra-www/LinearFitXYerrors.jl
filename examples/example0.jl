@@ -28,5 +28,5 @@ Y = [9.8, 7.4, 7.9, 8.3, 8.3, 9.0, 9.7, 8.8, 7.6, 6.9]
 # COMPUTE and PLOT:
 stxy = linearfitxy(X,Y, isplot=true)    # σX =  σY = r = 0
 
-# savefig("Example0_LinearFitXYerrors.png")
+savefig("Example0b_LinearFitXYerrors.png")
 ########################################

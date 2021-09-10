@@ -106,5 +106,6 @@ plot!(xx, cf2[1] .+ cf2[2]*xx, lw=0.5, lc=:red, ls=:dash, label="LsqFit (no erro
 plot!(xx, cf3[1] .+ cf3[2]*xx, color=:darkgreen, lw=0.5, ls=:dash, label="LsqFit (Y-errors)")
 plot!(xx, cf4[1] .+ cf4[2]*xx, color=:darkred, lw=0.5, ls=:dash, label="LsqFit (X-errors)")
 
-# savefig("Example2_LinearFitXYerrors.png")
+
+savefig("Example2_LinearFitXYerrors.png")
 ########################################
