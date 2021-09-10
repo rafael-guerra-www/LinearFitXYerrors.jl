@@ -2,6 +2,8 @@
 # Correlated errors in X and Y
 
 using LinearFitXYerrors
+using Plots; gr()
+
 
 # INPUT DATA:
 # Amen, S. [2012] Linear estimation for data with error ellipses. MSc. Statistics, Univ. of Texas
@@ -46,6 +48,9 @@ r = cov_μₑ_η ./ (σμₑ .* ση )   # correlation coefficient between error
 
 
 # COMPUTE and PLOT:
+# The standard deviation errors using York (2004) are >> than Amen (2012)
+# However, Amen (2012) errors seem to be underestimated - tbc
+
 stxy = linearfitxy(μₑ, η; σX=σμₑ, σY=ση, r=r, isplot=true)
 
 

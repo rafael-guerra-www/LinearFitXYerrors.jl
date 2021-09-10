@@ -2,7 +2,7 @@
 
 <img src="https://user-images.githubusercontent.com/20739393/132685450-1a34351f-ad02-49ee-9d57-b498437e356a.png" width="320" />
 
-This small Julia package, based on York (1966) and York et al. (2004), performs 1D linear fitting of experimental data with uncertainties in both X and Y:
+This small Julia package, based on York et al. (2004), performs 1D linear fitting of experimental data with uncertainties in both X and Y:
 
             Linear fit:             Y = a + b*X                             [1]
             
@@ -19,23 +19,22 @@ where:
 For the `σX` and `σY` errors (error ellipses) a bivariate Gaussian distribution is assumed.\
 If no errors are provided, or if only `σX` or `σY` are provided, then the results are equivalent to those obtained using the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
 
-`LinearFitXYerrors.jl` is based on York (1966) and York et al. (2004). See references for further details.
-
 The package computes:
 - The intercept `a`, the slope `b` and their uncertainties `σa` and `σb`
 - `σa95` and `σb95`: 95%-confidence interval uncertainties corrected by two-tailed t-Student distribution, e.g.: `b ± σb95 = b ± t(0.975,N-2)*σb`
 - Goodness of fit `S` (reduced Χ² test): the underlying quantity has Χ² distribution with N-2 degrees of freedom\
   `S ~ 1`: fit consistent with errors, `S > 1`: poor fit, `S >> 1`: errors underestimated, `S < 1`: errors overestimated
 - Pearson's correlation coefficient `ρ` that accounts for data errors
-- Optional display of fit results with error ellipses and confidence intervals
+- Optional display of results with error ellipses and confidence intervals (the latter for no errors case only)
 
 The default argument `isplot=false` can be turned on to plot the results.\
 Currently `using Plots.jl; gr()` is used.
 
+
 ##
 ## Installation
 ```julia
-julia> ] add https://github.com/rafael-guerra-www/LinearFitXYerrors.jl
+julia> ] add LinearFitXYerrors
 julia> using LinearFitXYerrors
 ```
 ##
@@ -49,6 +48,12 @@ st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlated (r=
 
 st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlated (r=0); plot with ratio=1
 ```
+
+## NOTES:
+- The objective for this package was to learn how to publish a Julia package via Github.
+- While the results seem consistent with the references provided, one exception is Amen (2012). The latter estimates standard deviation errors that are much smaller than York et al. (2004), for input data with large errors, which are correlated. See references for further details.
+
+- Currently confidence interval ribbons are only provided for input data with no errors.
 
 ##
 ## References:
@@ -67,10 +72,12 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 
 *York, D. [1966] Least-squares fitting of a straight line. Canadian Journal of Physics, 44(5), pp.1079–1086*
 
+*York, D. [1969] Least squares fitting of a straight line with correlated errors. Earth and Planetary Science Letters, 5, pp.320–324.*
+
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 ##
-## Example-0: no errors in X and Y
+## Example-0b: no errors in X and Y
 *Reference: Altman and Gardner (1988)*
 
 ![Example0_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667125-915c4fb8-0b29-438c-a269-efeada647597.png)

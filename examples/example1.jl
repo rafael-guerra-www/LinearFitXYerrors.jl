@@ -2,6 +2,7 @@
 # Non-correlated errors in X and in Y
 
 using LinearFitXYerrors
+using Plots; gr()
 
 # INPUT DATA:
 # York, D. [1966] Least-squares fitting of a straight line. Canadian Journal of Physics, 44(5), pp.1079–1086

@@ -2,7 +2,21 @@
 # No errors in X nor in Y
 
 using LinearFitXYerrors
+using Plots; gr()
 
+# Example-0a
+# INPUT DATA:
+# http://pba.ucdavis.edu/files/45007.pdf
+
+X = [16.4, 17.2, 17.6, 18.0, 18.2, 18.5]
+Y = [2.67, 2.75, 2.99, 3.14, 3.88, 4.23]
+
+# COMPUTE and PLOT:
+stxy = linearfitxy(X,Y, isplot=true)
+
+
+
+# Example-0b
 # INPUT DATA:
 # Altman, D. and Gardner, M. [1988] Statistics in Medicine: Calculating confidence intervals for regression and correlation. British Medical Journal, 296(6631), pp.1238–1242.
 

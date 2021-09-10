@@ -29,7 +29,7 @@ using Test
     Y = [9.8, 7.4, 7.9, 8.3, 8.3, 9.0, 9.7, 8.8, 7.6, 6.9]
 
     stxy = linearfitxy(X,Y)
-  
+
     @test   stxy.a    ≈ 20.1891143911439
     @test   stxy.b    ≈ -0.1167896678967
     @test   stxy.σa   ≈  2.6713186714425
@@ -52,16 +52,18 @@ using Test
     # the weights ωX, ωY are the inverse of the variances
     σX = 1 ./ sqrt.([1000., 1000, 500, 800, 200, 80,  60, 20, 1.8, 1])
     σY = 1 ./ sqrt.([1., 1.8, 4, 8, 20, 20, 70, 70, 100, 500])
-    r = 0*X;
+    r = 0*X
 
     stxy = linearfitxy(X,Y; σX=σX, σY=σY, r=r)
 
-    @test   stxy.a  ≈  5.47991022403286
-    @test   stxy.b  ≈ -0.48053340744620
-    @test   stxy.σa ≈ 0.359246522551112
-    @test   stxy.σb ≈ 0.070620269528771
-    @test   stxy.S  ≈ 1.217905640539398
-    @test   stxy.ρ  ≈ -0.94325300584483
+    @test  stxy.a    ≈  5.47991022403286
+    @test  stxy.b    ≈ -0.48053340744620
+    @test  stxy.σa   ≈  0.35924652255111
+    @test  stxy.σb   ≈  0.07062026952877
+    @test  stxy.σa95 ≈  0.82842396656058
+    @test  stxy.σb95 ≈  0.16285063356258
+    @test  stxy.S    ≈  1.21790564053940
+    @test  stxy.ρ    ≈ -0.94325300584483
 
 
 

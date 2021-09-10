@@ -123,12 +123,14 @@ function linearfitxy(X, Y; σX=0, σY=0, r=0, isplot=false, ratio=1)
         x = X̄ .+ β                  # y = Ȳ + b*β
         X̄ = sum(W .* x)/sum(W)      # Ȳ = sum(W .* y)/sum(W)
 
-        # standard error *Ŝ factor defined in Cantrell (2008)
-        Ŝ = sqrt(sum(W .* (Y - b*X .- a).^2) /(N-2))  # goodness of fit
+        
+        # compare to: Ŝ = sqrt(sum((Y - b*X .- a).^2)/(N-2))
+        Ŝ = sqrt(sum(W .* (Y - b*X .- a).^2) /(N-2))  # goodness of fit (York, 2004), (Cantrell, 2008)
+               
         σb = sqrt(1/sum(W .* (x .- X̄).^2))
         σa = Ŝ * sqrt(1/sum(W) + X̄^2 * σb^2)
-        σb *= Ŝ
-
+        σb *= Ŝ             # standard error * Ŝ factor (Cantrell, 2008)
+        
         # See Wikipedia Regression dilution (Pearson's correlation coefficient with errors in variables)
         vX = var(X); vY = var(Y)
         ρ = cov(X,Y)/sqrt(vX*vY) * sqrt(vX/(vX + var(σX))) * sqrt(vY/(vY + var(σY))) 
@@ -194,24 +196,29 @@ function  plot_linfitxy(st::stfitxy; ratio=1)
     tl, bl = (st.a - st.σa) .+ (st.b + st.σb)*xx,  (st.a + st.σa) .+ (st.b - st.σb)*xx
     σp, σm = maximum([tl bl], dims=2) .-  (st.a .+ st.b*xx),  (st.a .+ st.b*xx) .- minimum([tl bl], dims=2)
 
-    #TODO: confirm 95%-confidence interval computation for full X-Y errors
-    mx = mean(X)
-    dx2 = (X .- mx).^2
-    cf = st.σb95 /st.σb   # to reuse already computed t-Student quantile
-    σx95 = cf * st.S * sqrt.(1/length(X) .+ dx2/sum(dx2))
-
+    #TODO: 95%-confidence interval computation for X-Y errors
+    N = length(X)
+    d = TDist(N-2)     # t-Student distribution with N-2 degrees of freedom
+    cf = quantile(d, 0.975)  # correction factor for 95% confidence intervals (two-tailed distribution)
+    σx95 = cf * st.S * sqrt.(1/N .+ (X .- mean(X)).^2 / var(X) /(N-1))
+    
+    
     plot(xlims=(x1,x2), title=str1*str2*str3, ratio=ratio, legend=:outerbottomright)
     scatter!([x1-dX x1-dX],[Y[1] Y[1]], mc=[:lightblue :reds], label=["95% confidence interval" "Y=(a ± σa)+(b ± σb)*X"], marker=:rect)
     plot!([x1-dX],[Y[1]], lc=:white, label=" ")   # adds space in legend
     plot!(X, st.a .+ st.b*X, color=:lightblue, ribbon=(σx95,σx95), label=false)
     plot!(xx, st.a .+ st.b*xx, color=:reds, ribbon=(σp,σm), label=false)
-    plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="X", ylabel="Y", label="LinearFitXY")
+
+    #TODO: 95%-confidence interval computation for X-Y errors
+    if all(≈(0), σX) && all(≈(0), σY)
+        plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="X", ylabel="Y", label="LinearFitXY")
+        plot!(xlims=extrema(X))
+    end
+
     scatter!(X, Y, msw=0.1, ms=1., msc=:lightgrey, xerror= σX, yerror= σY, label=false)
     scatter!(X, Y, msw=0.1, ms=1.5, mc=:blue, label=false)
     
-    if σX != 0 && σY != 0
+    if !all(≈(0), σX) || !all(≈(0), σY)
         plot_covariance_ellipses!(X, Y, σX.^2, covXY, σY.^2; lc=:grey)
-    elseif σX == 0 && σY == 0
-        plot!(xlims=extrema(X))
     end
 end

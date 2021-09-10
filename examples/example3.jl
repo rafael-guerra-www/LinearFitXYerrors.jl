@@ -2,13 +2,14 @@
 # Correlated errors in X and Y
 
 using LinearFitXYerrors
+using Plots; gr()
+
 
 # INPUT DATA:
 # Mahon, K. [1996] The New “York” Regression: Application of an Improved Statistical Method to Geochemistry. International Geology Review, 38(4), pp.293–303
 
 #  Table 3
-
-# Num    X        Y
+#      X        Y
 M = [0.037   0.0080
      0.035   0.0084
      0.032   0.0100
