@@ -40,7 +40,7 @@ julia> using LinearFitXYerrors
 ##
 ## Useage
 ```julia
-# The input data and regression results are returned in the fields of the `st` structure:
+# The input data and regression results are returned in the fields of the `st` structure (::stfitxy):
 
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
@@ -49,11 +49,12 @@ st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlated (r=
 st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlated (r=0); plot with ratio=1
 ```
 
-## NOTES:
-- The objective for this package was to learn how to publish a Julia package via Github.
-- While the results seem consistent with the references provided, one exception is Amen (2012). The latter estimates standard deviation errors that are much smaller than York et al. (2004), for input data with large errors, which are correlated. See references for further details.
+## Notes:
+- The objective for this first package was to learn how to publish a Julia package via Github while implementing York's technique.
+- Currently the confidence interval ribbons are only provided for input data with no errors.
+- The package author is not a statistician and the topics of "errors in variables" and "confidence intervals" are beyond his expertise.
+- While the results seem to be consistent with the references provided, one notable exception is Amen (2012). The latter estimates standard deviation errors for regression in Example-2 that are much smaller than York et al. (2004). The input data in this example have large correlated errors. See the References sectin for further details.
 
-- Currently confidence interval ribbons are only provided for input data with no errors.
 
 ##
 ## References:
@@ -80,18 +81,23 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 ## Example-0b: no errors in X and Y
 *Reference: Altman and Gardner (1988)*
 
-![Example0_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667125-915c4fb8-0b29-438c-a269-efeada647597.png)
+![Example0b_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855741-7fbc7d80-76af-4f0b-a960-13e12872f8fd.png)
+
 
 ## Example-1: uncorrelated errors in X and Y
 *References: York (1966) and Cantrell (2008)*
 
-![Example1_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667149-4cacd88a-6d62-409b-b08c-c69e78e671e3.png)
+![Example1_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855764-ce6f5e40-8d5f-4d18-9c10-bdd23fec927b.png)
+
 
 ## Example-2: correlated errors in X and Y
 *Reference: Amen (2012)*
 
-![Example2_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132667167-d4cdf29e-32a0-4e39-a990-5f00165ffc1b.png)
+![Example2_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855799-20aeb2fb-c327-46c6-b864-dc5ebca75736.png)
 
 
 ## Example-3: correlated errors in X and Y
 *Reference: Mahon (1996)*
+
+![Example3_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855823-f056ce55-c017-4360-9ecf-b5fbcd6f3582.png)
+
