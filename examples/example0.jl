@@ -12,7 +12,7 @@ X = [16.4, 17.2, 17.6, 18.0, 18.2, 18.5]
 Y = [2.67, 2.75, 2.99, 3.14, 3.88, 4.23]
 
 # COMPUTE and PLOT:
-stxy = linearfitxy(X,Y, isplot=true)
+stxy = linearfitxy(X,Y, isplot=true);
 
 
 
@@ -26,7 +26,8 @@ Y = [9.8, 7.4, 7.9, 8.3, 8.3, 9.0, 9.7, 8.8, 7.6, 6.9]
 
 
 # COMPUTE and PLOT:
-stxy = linearfitxy(X,Y, isplot=true)    # σX =  σY = r = 0
+stxy = linearfitxy(X,Y, isplot=true);    # σX =  σY = r = 0
+
 
 savefig("Example0b_LinearFitXYerrors.png")
 ########################################
