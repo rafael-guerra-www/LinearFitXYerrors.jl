@@ -20,25 +20,18 @@ r = 0*X;
 
 
 # COMPUTE and PLOT:
-stxy = linearfitxy(X,Y; σX=σX, σY=σY, r=r, isplot=true)
-
+stxy = linearfitxy(X,Y; σX=σX, σY=σY, r=r, isplot=true);
 
 
 # If assuming only erros in Y or in X:
-sty = linearfitxy(X,Y; σX=0, σY=σY, r=r)
-stx = linearfitxy(X,Y; σX=σX, σY=0, r=r)
+sty = linearfitxy(X,Y; σX=0, σY=σY, r=r);
+stx = linearfitxy(X,Y; σX=σX, σY=0, r=r);
 
 dX = diff([extrema(X)...])[1]/7
 x1, x2 = (-dX, dX) .+ extrema(X)
 xx = [x1; X; x2]
 plot!(xx, sty.a .+ sty.b*xx, color=:lime, lw=0.5, label="LinearFitXY (Y errors)")
 plot!(xx, stx.a .+ stx.b*xx, color=:orange, lw=0.5, label="LinearFitXY (X errors)")
-
-@printf("LinearFitXY (Y errors): Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", sty.a, sty.σa, sty.b, sty.σb)
-@printf("Pearson ρ = %.2f;  Goodness of fit = %.2f", sty.ρ, sty.S)
-
-@printf("LinearFitXY (X errors): Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", stx.a, stx.σa, stx.b, stx.σb)
-@printf("Pearson ρ = %.2f;  Goodness of fit = %.2f", stx.ρ, sty.S)
 
 
 savefig("Example1_LinearFitXYerrors.png")
