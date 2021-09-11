@@ -56,11 +56,11 @@ stxy = linearfitxy(μₑ, η; σX=σμₑ, σY=ση, r=r, isplot=true)
 
 
 # If assuming no errors:
-st = linearfitxy(μₑ, η)
+st = linearfitxy(μₑ, η);
 
 # If assuming only errors in Y or in X:
-sty = linearfitxy(μₑ, η; σX=0, σY=ση, r=r)
-stx = linearfitxy(μₑ, η; σX=σμₑ, σY=0, r=r)
+sty = linearfitxy(μₑ, η; σX=0, σY=ση, r=r);
+stx = linearfitxy(μₑ, η; σX=σμₑ, σY=0, r=r);
 
 dX = diff([extrema(μₑ)...])[1]/7
 x1, x2 = (-dX, dX) .+ extrema(μₑ)
@@ -68,12 +68,6 @@ xx = [x1; μₑ; x2]
 plot!(xx, st.a .+ st.b*xx, color=:pink, lw=0.5, label="LinearFitXY (no errors)");
 plot!(xx, sty.a .+ sty.b*xx, color=:lime, lw=0.5, label="LinearFitXY (Y errors)");
 plot!(xx, stx.a .+ stx.b*xx, color=:orange, lw=0.5, label="LinearFitXY (X errors)");
-
-@printf("LinearFitXY (Y errors): Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", sty.a, sty.σa, sty.b, sty.σb);
-@printf("Pearson r = %.2f; Goodness of fit = %.2f", sty.ρ, sty.S)
-
-@printf("LinearFitXY (X errors): Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", stx.a, stx.σa, stx.b, stx.σb);
-@printf("Pearson r = %.2f; Goodness of fit = %.2f", stx.ρ, stx.S)
 
 
 # Compare with LsqFit:
