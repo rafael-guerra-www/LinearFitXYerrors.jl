@@ -51,7 +51,7 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 
 ## Notes:
 - The objective for this first package was to learn how to publish a Julia package via Github while implementing York's technique.
-- Currently the confidence interval ribbons are only provided for input data with no errors.
+- Currently the confidence interval plot ribbons are only provided for the case where input data have no errors, but in all cases, linear ribbons accounting for the standard deviation in regression errors are produced.
 - The package author is not a statistician and the topics of "errors in variables" and "confidence intervals" are beyond his expertise.
 - While the results seem to be consistent with the references provided, one notable exception is Amen (2012). The latter estimates standard deviation errors for regression in Example-2 that seem to be much smaller than using this package technique (York et al., 2004). However, the input data in that example have large correlated errors and York's solution seems reasonable (tbc).
 
@@ -78,7 +78,7 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 ##
-## Example-0b: no errors in X and Y
+## Example-0: no errors in X and Y
 *Reference: Altman and Gardner (1988)*
 
 ![Example0b_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855741-7fbc7d80-76af-4f0b-a960-13e12872f8fd.png)
