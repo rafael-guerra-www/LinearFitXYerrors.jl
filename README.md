@@ -13,7 +13,7 @@ This small Julia package, based on York et al. (2004), performs 1D linear fittin
 where:
 - `X` and `Y` are input data vectors with length ≥ 3
 - Optional standard deviation errors `σX` and `σY` are vectors or scalars
-- Optional `r` is the correlation between the `σX` and `σY` errors\
+- Optional `r` is the correlation between the `σX` and `σY` errors.\
            `r` can be a vector or scalar
 
 For the `σX` and `σY` errors (error ellipses) a bivariate Gaussian distribution is assumed.\
@@ -44,9 +44,9 @@ julia> using LinearFitXYerrors
 
 st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
-st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlated (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors non-correlated (r=0); plot with ratio=1
 
-st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlated (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors non-correlated (r=0); plot with auto ratio
 ```
 
 ## Notes:
