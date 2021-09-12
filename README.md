@@ -17,7 +17,7 @@ where:
            `r` can be a vector or scalar
 
 For the `σX` and `σY` errors (error ellipses) a bivariate Gaussian distribution is assumed.\
-If no errors are provided, or if only `σX` or `σY` are provided, then the results are equivalent to those obtained using the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
+If no errors are provided, or if only `σX` or `σY` are provided, then equivalent regression results could be obtained using the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
 
 The package computes:
 - The intercept `a`, the slope `b` and their uncertainties `σa` and `σb`
