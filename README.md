@@ -78,6 +78,8 @@ st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors no
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 ##
+### *NB: find the Julia code for the displayed examples below in the repository [examples folder](https://github.com/rafael-guerra-www/LinearFitXYerrors.jl/tree/master/examples)*
+
 ## Example-0: no errors in X and Y
 *Reference: Altman and Gardner (1988)*
 
