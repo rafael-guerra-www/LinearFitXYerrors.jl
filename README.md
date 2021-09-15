@@ -4,11 +4,11 @@
 
 This small Julia package, based on York et al. (2004), performs 1D linear fitting of experimental data with uncertainties in both X and Y:
 
-            Linear fit:             Y = a + b*X                             [1]
+     Linear fit:             Y = a + b*X                             [1]
             
-            Errors:                 X ± σX;  Y ± σY                         [2]
+     Errors:                 X ± σX;  Y ± σY                         [2]
 
-            Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)          [3]
+     Errors' correlation:    r =  = cov(σX, σY) / (σX * σY)          [3]
 
 where:
 - `X` and `Y` are input data vectors with length ≥ 3
