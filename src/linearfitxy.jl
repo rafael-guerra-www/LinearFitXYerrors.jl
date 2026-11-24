@@ -1,11 +1,11 @@
 # Revised src/linearfitxy.jl (full file, drop-in replacement)
 #
 # Changes vs current master:
-#   1. BUG FIX — de-attenuated Pearson ρ: uses the mean-square error variance
-#      mean(σX.^2) (not var(σX), which is ~0 for constant σ), subtracts the
-#      error cross-covariance for correlated errors, and de-attenuates
-#      (factor > 1) instead of attenuating further. Validated by simulation:
-#      true latent ρ = 0.80 was recovered as 0.79–0.82 (old formula: 0.60–0.63).
+#   1. ρ (Pearson) now the standard observed coefficient of the data — the
+#      old formula multiplied by "regression-dilution" factors using
+#      var(σX) across points (a near-no-op, and directionally wrong); the
+#      interim de-attenuated variant was dropped: in a line-fit context it is
+#      degenerate (→ ±1 whenever S ≈ 1) and duplicates the message of S.
 #   2. NEW — covariance of (a, b) returned as σab (needed for 2D confidence
 #      regions and error propagation; cov(a,b) ≈ -X̄w·σb²).
 #   3. Hoisted loop-invariant ωX, ωY, α out of the iteration loop; tolerance
@@ -48,10 +48,11 @@ end
 `Y = a + b*X`, errors `X ± σX`, `Y ± σY`, optional error correlation `r`
 (scalar or per-point vector).
 
-Returns `st::stfitxy` with: `a`, `b`, `σa`, `σb`, `σab` (covariance of a, b),
+Returns `st::stfitxy` with: `a`, `b`, `σb`, `σab` (covariance of a, b),
 `σa95`, `σb95` (95% t-Student CIs), goodness of fit `S` (reduced Χ²),
-de-attenuated Pearson coefficient `ρ` (corrected for regression dilution via
-the mean-square error variances), iteration trace `bᵢ` and count `i`.
+Pearson's correlation coefficient `ρ` of the observed data (standard,
+descriptive convention: comparable with scipy.stats.pearsonr / R / Excel),
+iteration trace `bᵢ` and count `i`.
 """
 function linearfitxy(X, Y; σX=0, σY=0, r=0, verbose=false, isplot=false, ratio=1)
 
@@ -60,13 +61,18 @@ function linearfitxy(X, Y; σX=0, σY=0, r=0, verbose=false, isplot=false, ratio
         throw(ArgumentError("X and Y must have the same length, ≥ 3"))
 
     # expand scalars once; all-zero σ vectors handled like the scalar-0 case
-    σX isa Number && (σX = fill(σX, N))
-    σY isa Number && (σY = fill(σY, N))
-    r  isa Number && (r  = fill(r,  N))
+    σX isa Number && (σX = fill(float(σX), N))   # float(): fill(0, N) would give
+    σY isa Number && (σY = fill(float(σY), N))   # Vector{Int64}, later rejecting the
+    r  isa Number && (r  = fill(float(r),  N))   # 1e-16 no-error sentinel (InexactError)
     (length(σX) == length(σY) == length(r) == N) ||
         throw(ArgumentError("σX, σY and r must be scalars or have length(X) elements"))
     any(isnan, X) && throw(ArgumentError("X contains NaN"))
     any(isnan, Y) && throw(ArgumentError("Y contains NaN"))
+
+    # normalize to Float64 vectors: stfitxy stores Vector{Float64}, and plain
+    # Integer input data (e.g. [1, 2, 3]) previously raised a MethodError
+    X = Float64.(X)
+    Y = Float64.(Y)
 
     d  = TDist(N - 2)                  # t-Student with N-2 d.o.f.
     cf = quantile(d, 0.975)            # two-tailed 95% factor
@@ -94,6 +100,9 @@ function linearfitxy(X, Y; σX=0, σY=0, r=0, verbose=false, isplot=false, ratio
         Nmax = 50                     # maximum number of iterations
         tol  = 1e-12                  # relative tolerance (1e-15 unattainable)
 
+        # keep the USER-provided errors for the output structure; the 1e-16
+        # sentinels below are internal-only (plotdata must see true zeros)
+        σX_out = copy(σX);  σY_out = copy(σY)
         all(iszero, σX) && (σX .= 1e-16)   # sentinel: no X errors
         all(iszero, σY) && (σY .= 1e-16)   # sentinel: no Y errors
         any(v -> !(abs(v) < 1), r) &&
@@ -137,15 +146,11 @@ function linearfitxy(X, Y; σX=0, σY=0, r=0, verbose=false, isplot=false, ratio
         σb *= Ŝ                        # Ŝ inflation (Cantrell 2008)
         σab = -X̄w * σb^2               # cov(a,b), same linearized level as σa, σb
 
-        # de-attenuated Pearson ρ (regression dilution):
-        # true ρ ≈ [cov(X,Y) − mean(r·σX·σY)] / sqrt((vX − mean(σX²))·(vY − mean(σY²)))
-        vX = var(X); vY = var(Y)
-        eX = mean(abs2, σX); eY = mean(abs2, σY)
-        ρ  = (cov(X, Y) - mean(r .* σX .* σY))
-        ρ /= sqrt(max(vX - eX, eps()) * max(vY - eY, eps()))
-        ρ  = clamp(ρ, -1.0, 1.0)
+        # Pearson's correlation coefficient of the observed data (descriptive,
+        # standard convention: comparable with scipy/R/Excel outputs):
+        ρ = cov(X, Y) / sqrt(var(X) * var(Y))
 
-        st = stfitxy(X, Y, σX, σY, r, a, b, σa, σb, σab, cf*σa, cf*σb, Ŝ, ρ, bᵢ, i)
+        st = stfitxy(X, Y, σX_out, σY_out, r, a, b, σa, σb, σab, cf*σa, cf*σb, Ŝ, ρ, bᵢ, i)
     end
 
     if isplot
