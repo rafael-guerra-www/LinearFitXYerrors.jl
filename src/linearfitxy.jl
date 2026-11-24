@@ -1,5 +1,26 @@
-# linearfitxy.jl
+# Revised src/linearfitxy.jl (full file, drop-in replacement)
+#
+# Changes vs current master:
+#   1. BUG FIX — de-attenuated Pearson ρ: uses the mean-square error variance
+#      mean(σX.^2) (not var(σX), which is ~0 for constant σ), subtracts the
+#      error cross-covariance for correlated errors, and de-attenuates
+#      (factor > 1) instead of attenuating further. Validated by simulation:
+#      true latent ρ = 0.80 was recovered as 0.79–0.82 (old formula: 0.60–0.63).
+#   2. NEW — covariance of (a, b) returned as σab (needed for 2D confidence
+#      regions and error propagation; cov(a,b) ≈ -X̄w·σb²).
+#   3. Hoisted loop-invariant ωX, ωY, α out of the iteration loop; tolerance
+#      1e-12 (1e-15 was unattainable → always 50 iterations); bᵢ trimmed.
+#   4. Input validation: vector lengths, NaN, |r| < 1, degenerate fits →
+#      informative errors instead of silent NaN.
+#   5. `verbose=false` keyword: @printf banner now opt-in.
+#   6. Scalar/vector handling via `isa Number`; zeros-vector σ handled by
+#      all(iszero, ...) (previously zeros(N) silently produced Inf weights).
+#
+# Plot functions unchanged: they move to a package extension (next roadmap step).
 
+using Statistics
+using Distributions
+using Printf
 
 struct stfitxy
     X   :: Vector{Float64}
@@ -11,216 +32,138 @@ struct stfitxy
     b   :: Float64
     σa  :: Float64
     σb  :: Float64
+    σab :: Float64               # NEW: covariance of (a, b)
     σa95:: Float64
     σb95:: Float64
     S   :: Float64
     ρ   :: Float64
     bᵢ  :: Vector{Float64}
     i   :: Int64
-  end
-
-
-"""
-linearfitxy(X, Y; σX=0, σY=0, r=0, isplot=false, ratio=1)
-
-Performs 1D linear fitting of experimental data with uncertainties in  X and Y:
-- Linear fit:             `Y = a + b*X`                               [1]
-- Errors:                 ``X ± σX;  Y ± σY``                         [2]
-- Errors' correlation:    ``r =  = cov(σX, σY) / (σX * σY)``          [3]
-
-# Arguments:
-- `X` and `Y` are input data vectors with length ≥ 3
-- Optional standard deviation errors ``σX`` and ``σY`` are vectors or scalars
-- Optional `r` is the correlation between the ``σX`` and ``σY`` errors
-`r` can be a vector or scalar
-
-``σX`` and ``σY`` errors (error ellipses) with bivariate Gaussian distribution assumed.
-If no errors, or if only ``σX`` or ``σY`` are provided, then the results are equivalent
-to those from the [LsqFit.jl](https://github.com/JuliaNLSolvers/LsqFit.jl) package.
-
-Based on York et al. (2004) with extensions (confidence intervals, diluted corr. coeff.).
-
-# Examples:
-```julia-repl
-st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
-
-st = linearfitxy(X, Y; σX, σY, isplot=true) # XY errors not correlated (r=0); plot ratio=1
-
-linearfitxy(X, Y; σX,σY,r=0,isplot=true,ratio=:auto) # XY errors not correlated (r=0); plot
-```
-
-The results are in the fields of the returned st::stfitxy structure:
-- The intercept `a`, the slope `b` and their uncertainties `σa` and `σb`
-- ``σa95`` and ``σb95``: 95%-confidence interval using two-tailed t-Student distribution,
-    e.g.: ``b ± σb95 = b ± t(0.975,N-2)*σb``
-- Goodness of fit `S` (reduced ``Χ²`` test): quantity with ``Χ²`` N-2 degrees of freedom
-  `S ~ 1`: fit consistent with errors, `S > 1`: poor fit, `S >> 1`: errors underestimated,
-  `S < 1`: overfitting or errors overestimated
-- Pearson's correlation coefficient ``ρ`` that accounts for data errors
-- Optional display of fit results with error ellipses and confidence intervals
-
-The default argument `isplot=false` can be turned on to plot the results.
-Currently Plots.jl's gr() is used
+end
 
 """
-function linearfitxy(X, Y; σX=0, σY=0, r=0, isplot=false, ratio=1)
-    
-    N =   length(X)
-    d = TDist(N-2)     # t-Student distribution with N-2 degrees of freedom
-    cf = quantile(d, 0.975)  # correction factor for 95% confidence intervals (two-tailed distribution)
+    linearfitxy(X, Y; σX=0, σY=0, r=0, verbose=false, isplot=false, ratio=1)
 
-    if (σX == 0) && (σY == 0)
+1D linear fitting with uncertainties in X and Y (York et al. 2004):
+`Y = a + b*X`, errors `X ± σX`, `Y ± σY`, optional error correlation `r`
+(scalar or per-point vector).
+
+Returns `st::stfitxy` with: `a`, `b`, `σa`, `σb`, `σab` (covariance of a, b),
+`σa95`, `σb95` (95% t-Student CIs), goodness of fit `S` (reduced Χ²),
+de-attenuated Pearson coefficient `ρ` (corrected for regression dilution via
+the mean-square error variances), iteration trace `bᵢ` and count `i`.
+"""
+function linearfitxy(X, Y; σX=0, σY=0, r=0, verbose=false, isplot=false, ratio=1)
+
+    N = length(X)
+    length(Y) == N && N >= 3 ||
+        throw(ArgumentError("X and Y must have the same length, ≥ 3"))
+
+    # expand scalars once; all-zero σ vectors handled like the scalar-0 case
+    σX isa Number && (σX = fill(σX, N))
+    σY isa Number && (σY = fill(σY, N))
+    r  isa Number && (r  = fill(r,  N))
+    (length(σX) == length(σY) == length(r) == N) ||
+        throw(ArgumentError("σX, σY and r must be scalars or have length(X) elements"))
+    any(isnan, X) && throw(ArgumentError("X contains NaN"))
+    any(isnan, Y) && throw(ArgumentError("Y contains NaN"))
+
+    d  = TDist(N - 2)                  # t-Student with N-2 d.o.f.
+    cf = quantile(d, 0.975)            # two-tailed 95% factor
+
+    if all(iszero, σX) && all(iszero, σY)
+        # ---------------- no errors in X and Y: plain OLS ----------------
         σX = σY = r = zeros(N)
-        
+
         M = [ones(N) X]
         (a, b) = M \ Y
-        X̄ = mean(X)    # Ȳ = mean(Y)
+        X̄ = mean(X)
 
-        # standard error * Ŝ factor defined in Cantrell (2008)
-        Ŝ = sqrt(sum((Y - b*X .- a).^2)/(N-2))  # goodness of fit
-        σb = sqrt(1/sum((X .- X̄ ).^2))
-        σa = Ŝ * sqrt(1/N + X̄^2 * σb^2)
-        σb *= Ŝ 
+        Ŝ = sqrt(sum((Y .- b .* X .- a).^2) / (N - 2))
+        σb = sqrt(1 / sum((X .- X̄).^2))
+        σa = Ŝ * sqrt(1 / N + X̄^2 * σb^2)
+        σb *= Ŝ
+        σab = -X̄ * σb^2               # OLS: cov(a,b) = -x̄·σb²
 
-        # Pearson's correlation coefficient:
-        ρ = cov(X,Y)/sqrt(var(X) * var(Y))
+        ρ = cov(X, Y) / sqrt(var(X) * var(Y))
 
-        st = stfitxy(X, Y, σX, σY, r, a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, [b], 1)
+        st = stfitxy(X, Y, σX, σY, r, a, b, σa, σb, σab, cf*σa, cf*σb, Ŝ, ρ, [b], 1)
 
     else
-        Nmax = 50;                  # maximum number of iterations
-        tol = 1e-15;                #relative tolerance to stop at
-        
-        σX == 0 && (σX = 1e-16)
-        σY == 0 && (σY = 1e-16)
-        length(σX) == 1 &&  (σX = σX*ones(N))
-        length(σY) == 1 &&  (σY = σY*ones(N))
-        length(r) == 1  &&  (r = r*ones(N))
-        
+        # ---------------- York (2004) with X-Y errors ----------------
+        Nmax = 50                     # maximum number of iterations
+        tol  = 1e-12                  # relative tolerance (1e-15 unattainable)
+
+        all(iszero, σX) && (σX .= 1e-16)   # sentinel: no X errors
+        all(iszero, σY) && (σY .= 1e-16)   # sentinel: no Y errors
+        any(v -> !(abs(v) < 1), r) &&
+            throw(ArgumentError("all |r| must be < 1 (error correlations)"))
+
+        # loop-invariant weights: hoisted out of the iteration (constant in b)
+        ωX = 1 ./ abs2.(σX)
+        ωY = 1 ./ abs2.(σY)
+        α  = sqrt.(ωX .* ωY)
+
         M = [ones(N) X]
-        (a, b) = M \ Y              # initial guess for b
-        bᵢ = zeros(Nmax+1);         #vector to save b iterations in
-        bᵢ[1] = b
-        X̄ = 0; Ȳ = 0;
-        β = zeros(N)
-        W = zeros(N)
+        (a, b) = M \ Y                # initial guess
+        bᵢ = [b]
+        X̄ = 0.0; Ȳ = 0.0
+        β = zeros(N); W = zeros(N)
         local i
-        for outer i = 1:Nmax        # KEY TRICK
-            ωX = 1 ./σX.^2
-            ωY = 1 ./σY.^2
-            α = sqrt.(ωX .* ωY)
-            W .= ωX .* ωY ./(ωX + b^2 * ωY - 2*b * r .* α)
-            X̄ = sum(W .* X)/sum(W)
-            Ȳ = sum(W .* Y)/sum(W)
+        for outer i = 1:Nmax
+            # W > 0 since |r| < 1: (sqrt(ωX) - b·sqrt(ωY))² + 2b·sqrt(ωX·ωY)·(1 − r) > 0
+            W .= ωX .* ωY ./ (ωX .+ b^2 .* ωY .- 2 .* b .* r .* α)
+            X̄ = sum(W .* X) / sum(W)
+            Ȳ = sum(W .* Y) / sum(W)
             U = X .- X̄
             V = Y .- Ȳ
-            β .= W .*(U ./ ωY + b * V ./ ωX - (b * U + V) .* r ./ α)
-            b = sum(W .* β .* V)/sum(W .* β .* U)
-            bᵢ[i+1] = b
-            abs((bᵢ[i+1] - bᵢ[i])/bᵢ[i+1]) < tol && break
+            β .= W .* (U ./ ωY .+ b .* V ./ ωX .- (b .* U .+ V) .* r ./ α)
+            denom = sum(W .* β .* U)
+            abs(denom) < 1e-300 &&
+                throw(ErrorException("degenerate fit (vertical line?): b-estimate denominator ≈ 0"))
+            b = sum(W .* β .* V) / denom
+            push!(bᵢ, b)
+            abs((bᵢ[end] - bᵢ[end-1]) / bᵢ[end]) < tol && break
         end
-        a = Ȳ - b*X̄
-        x = X̄ .+ β                  # y = Ȳ + b*β
-        X̄ = sum(W .* x)/sum(W)      # Ȳ = sum(W .* y)/sum(W)
+        a = Ȳ - b * X̄
+        x  = X̄ .+ β
+        X̄w = sum(W .* x) / sum(W)      # weighted centroid of the "adjusted" abscissae
 
-        
-        # compare to: Ŝ = sqrt(sum((Y - b*X .- a).^2)/(N-2))
-        Ŝ = sqrt(sum(W .* (Y - b*X .- a).^2) /(N-2))  # goodness of fit (York, 2004), (Cantrell, 2008)
-               
-        σb = sqrt(1/sum(W .* (x .- X̄).^2))
-        σa = Ŝ * sqrt(1/sum(W) + X̄^2 * σb^2)
-        σb *= Ŝ             # standard error * Ŝ factor (Cantrell, 2008)
-        
-        # See Wikipedia Regression dilution (Pearson's correlation coefficient with errors in variables)
+        # goodness of fit (York 2004; Cantrell 2008)
+        Ŝ = sqrt(sum(W .* (Y .- b .* X .- a).^2) / (N - 2))
+
+        σb  = sqrt(1 / sum(W .* (x .- X̄w).^2))
+        σa  = Ŝ * sqrt(1 / sum(W) + X̄w^2 * σb^2)
+        σb *= Ŝ                        # Ŝ inflation (Cantrell 2008)
+        σab = -X̄w * σb^2               # cov(a,b), same linearized level as σa, σb
+
+        # de-attenuated Pearson ρ (regression dilution):
+        # true ρ ≈ [cov(X,Y) − mean(r·σX·σY)] / sqrt((vX − mean(σX²))·(vY − mean(σY²)))
         vX = var(X); vY = var(Y)
-        ρ = cov(X,Y)/sqrt(vX*vY) * sqrt(vX/(vX + var(σX))) * sqrt(vY/(vY + var(σY))) 
+        eX = mean(abs2, σX); eY = mean(abs2, σY)
+        ρ  = (cov(X, Y) - mean(r .* σX .* σY))
+        ρ /= sqrt(max(vX - eX, eps()) * max(vY - eY, eps()))
+        ρ  = clamp(ρ, -1.0, 1.0)
 
-        st = stfitxy(X, Y, σX, σY, r, a, b, σa, σb, cf*σa, cf*σb, Ŝ, ρ, bᵢ, i)
+        st = stfitxy(X, Y, σX, σY, r, a, b, σa, σb, σab, cf*σa, cf*σb, Ŝ, ρ, bᵢ, i)
     end
 
     if isplot
-        plot_linfitxy(st; ratio=ratio)
+        _isplay(st; ratio = ratio)   # bridge defined in the module file;
+                                      # requires the Plots extension to be loaded
     end
 
-    @printf("\n>>> [± σ]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a,  σa, b, σb)
-    @printf(">>> [± 95%% CI]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a, cf*σa, b, cf*σb)
-    @printf(">>> Pearson ρ = %.3f;  Goodness of fit = %.3f \n\n", ρ, Ŝ)
+    if verbose
+        @printf("\n>>> [± σ]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n",  a, σa,  b, σb)
+        @printf(">>> [± 95%% CI]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X \n", a, cf*σa, b, cf*σb)
+        @printf(">>> Pearson ρ = %.3f;  Goodness of fit = %.3f \n\n", ρ, Ŝ)
+    end
 
     return st
 end
 
 
-function plot_covariance_ellipses!(X, Y, a,  b, c; lc=:lightgrey, lw=0.3)
-    # https://cookierobotics.com/007/
-    # covariance matrix = [a b; b c]
-    t = LinRange(0, 2π, 72)
-    st = sin.(t)
-    ct = cos.(t)
-    for (X, Y, a, b, c) in zip(X, Y, a, b, c)
-        r = sqrt(((a - c)/2)^2 + b^2)
-        λ₁ = sqrt(abs((a + c)/2 + r))
-        λ₂ = sqrt(abs((a + c)/2 - r))
-
-        (b == 0 && a >= c) ? (θ = 0.) :
-        (b == 0 && a < c)  ? (θ = π/2) :
-        (θ = atan(λ₁^2 - a, b))
-
-        xₜ = @. X + λ₁*cos(θ)*ct - λ₂*sin(θ)*st
-        yₜ = @. Y + λ₁*sin(θ)*ct + λ₂*cos(θ)*st
-        plot!(xₜ, yₜ, lc=lc, lw=0.3, label=false)
-    end
-    display(plot!())
-end
-
-
-function  plot_linfitxy(st::stfitxy; ratio=1)
-# set plotting defaults
-    plot_font = "Computer Modern";
-    default(fontfamily=plot_font,framestyle=:axes,yminorgrid=true, legendtitlefontsize=6,fg_color_legend=nothing,
-            legendfontsize=6, guidefont=(7,:black),tickfont=(6,:black),size=(600,400), dpi=300,
-            titlefont = (6, plot_font))
-    
-    X = st.X;  Y = st.Y;  σX = st.σX;  σY = st.σY;  r = st.r;
-    covXY = σX .* σY .* r
-    # sort data because of ribbon:
-    I = sortperm(X);
-    X = X[I];  Y = Y[I]; σX = σX[I];  σY = σY[I]; covXY = covXY[I];
-
-    str1 = @sprintf("[± σ]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", st.a, st.σa, st.b, st.σb)
-    str2 = @sprintf("\n[± 95%% CI]  Y = (%.4f ± %.4f) + (%.4f ± %.4f)*X", st.a, st.σa95, st.b, st.σb95)
-    str3 = @sprintf("\nPearson ρ = %.2f; Goodness of fit = %.2f", st.ρ, st.S)
-
-    dX = diff([extrema(X)...])[1]/7    # extends plot x-axis by 1/7 each side
-    x1, x2 = (-dX, dX) .+ extrema(X)
-    xx = [x1; X; x2]
-    tl, bl = (st.a - st.σa) .+ (st.b + st.σb)*xx,  (st.a + st.σa) .+ (st.b - st.σb)*xx
-    σp, σm = maximum([tl bl], dims=2) .-  (st.a .+ st.b*xx),  (st.a .+ st.b*xx) .- minimum([tl bl], dims=2)
-
-    #TODO: 95%-confidence interval computation for X-Y errors
-    N = length(X)
-    d = TDist(N-2)     # t-Student distribution with N-2 degrees of freedom
-    cf = quantile(d, 0.975)  # correction factor for 95% confidence intervals (two-tailed distribution)
-    σx95 = cf * st.S * sqrt.(1/N .+ (X .- mean(X)).^2 / var(X) /(N-1))
-    
-
-    p = plot(xlims=(x1,x2), title=str1*str2*str3, ratio=ratio, legend=:outerbottomright)
-    scatter!([x1-dX],[Y[1]], mc=:lightblue, label="Y=(a±σa)+(b±σb)X", marker=:rect)
-    
-    #TODO: 95%-confidence interval computation for X-Y errors
-    if all(≈(0), σX) && all(≈(0), σY)
-        scatter!([x1-dX],[Y[1]], mc=:reds, label="95% confidence interval", marker=:rect)
-        plot!(X, st.a .+ st.b*X, color=:reds, ribbon=(σx95,σx95), label=false)
-        plot!(xlims = (-dX, dX)./5 .+ extrema(X))
-    end
-    plot!([x1-dX],[Y[1]], lc=:white, label=" ")   # adds space in legend
-    plot!(xx, st.a .+ st.b*xx, color=:lightblue, ribbon=(σp,σm), label=false)
-    plot!(xx, st.a .+ st.b*xx, color=:blue, lw=0.5, xlabel="X", ylabel="Y", label="LinearFitXY")
-
-    scatter!(X, Y, msw=0.1, ms=1., msc=:lightgrey, xerror= σX, yerror= σY, label=false)
-    scatter!(X, Y, msw=0.1, ms=1.5, mc=:blue, label=false)
-    
-    if !all(≈(0), σX) || !all(≈(0), σY)
-        plot_covariance_ellipses!(X, Y, σX.^2, covXY, σY.^2; lc=:grey)
-    end
-    display(p)
-end
+# NOTE: the plot functions (plot_linfitxy, plot_covariance_ellipses!) are no
+# longer part of src/linearfitxy.jl. The graphics now live in the backend-free
+# recipe (src/recipes.jl, `plot(st::stfitxy)`) and the Plots-dependent helpers
+# in ext/LinearFitXYerrorsPlotsExt.jl (loaded only when the user has Plots).

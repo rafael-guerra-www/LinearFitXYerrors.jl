@@ -1,20 +1,36 @@
+# Project.toml — LinearFitXYerrors.jl with a Plots.jl package extension
+# - Plots moves to [weakdeps]: NOT loaded unless the user does `using Plots`
+# - [extensions] activates ext/LinearFitXYerrorsPlotsExt.jl automatically
+#   when Plots is loaded (Julia ≥ 1.9)
+# - RecipesBase joins [deps]: tiny, backend-free; carries the plot recipe
+#   so `plot(st)` works with any recipe-based frontend without a hard dep
+# - Julia compat needs ≥ 1.9 for extensions
+
 name = "LinearFitXYerrors"
 uuid = "f30eeb3b-f5f0-4632-88ad-a7e11dd3714b"
 authors = ["Rafael Guerra <rafael.guerra.www@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[weakdeps]
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+
+[extensions]
+LinearFitXYerrorsPlotsExt = "Plots"
 
 [compat]
 Distributions = "0.25"
 Plots = "1"
-julia = "1"
+RecipesBase = "1.4"
+julia = "1.9"
 
 [extras]
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
