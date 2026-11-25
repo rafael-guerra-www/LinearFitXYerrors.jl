@@ -26,7 +26,9 @@ LinearFitXYerrorsPlotsExt = "Plots"
 [compat]
 Distributions = "0.25"
 Plots = "1"
-RecipesBase = "1.4"
+# RecipesBase = "1" (NOT "1.4"): RecipesBase 1.4.0 requires Julia >= 1.10,
+# so ^1.4 made the package uninstallable on Julia 1.9 (AutoMerge caught it)
+RecipesBase = "1"
 julia = "1.9"
 
 [extras]
