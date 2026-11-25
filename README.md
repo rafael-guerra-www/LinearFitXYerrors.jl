@@ -135,25 +135,66 @@ While the results are consistent with the references provided, Amen (2012) repor
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 ##
-## Example-0b: no errors in X and Y
-*Reference: Altman and Gardner (1988)*
+### *For what follows, see all data and code in the examples folder* 
+##
+## Example-0: no errors in X and Y
+*References: pba.ucdavis.edu (0a) and Altman and Gardner (1988) (0b)*
 
-![Example0b_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855741-7fbc7d80-76af-4f0b-a960-13e12872f8fd.png)
+Without input errors, the package reproduces OLS and draws the pointwise 95%
+confidence band of the fitted line.
+
+<img width="1800" height="1200" alt="Example0a_LinearFitXYerrors" src="https://github.com/user-attachments/assets/bed3de95-1cbb-4a63-a845-bf97f4d06fab" />
+
+<img width="1800" height="1200" alt="Example0b_LinearFitXYerrors" src="https://github.com/user-attachments/assets/5a09d998-a462-4058-9bcd-25fb00f849e9" />
 
 
 ## Example-1: uncorrelated errors in X and Y
 *References: York (1966) and Cantrell (2008)*
 
-![Example1_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855764-ce6f5e40-8d5f-4d18-9c10-bdd23fec927b.png)
+Data with errors on both variables and the covariance-error ellipses. The
+figure also overlays the fits obtained by declaring errors in only one of the
+variables (green: Y errors only; orange: X errors only), showing the
+regression-dilution effect on the slope.
+
+<img width="1950" height="1260" alt="Example1_LinearFitXYerrors" src="https://github.com/user-attachments/assets/28a7127a-51fc-4f1e-aca2-45c981df9f92" />
 
 
 ## Example-2: correlated errors in X and Y
 *Reference: Amen (2012)*
 
-![Example2_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855799-20aeb2fb-c327-46c6-b864-dc5ebca75736.png)
+Per-point error correlations (including negative values), covariance-error
+ellipses, and the 95% confidence band of the fitted line.
+
+<img width="1950" height="1260" alt="Example2_LinearFitXYerrors" src="https://github.com/user-attachments/assets/09e33b54-d344-4b57-bc1c-f6513c8edf18" />
 
 
-## Example-3: correlated errors in X and Y
+## Example-3: correlated vs uncorrelated errors
 *Reference: Mahon (1996)*
 
-![Example3_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855823-f056ce55-c017-4360-9ecf-b5fbcd6f3582.png)
+Same data fitted with uncorrelated errors (r = 0):
+
+<img width="1950" height="1260" alt="Example3_LinearFitXYerrors" src="https://github.com/user-attachments/assets/902ca2c4-e8ce-4730-811e-6f55469a9a24" />
+
+and with correlated errors (r = 0.7071):
+
+<img width="1950" height="1260" alt="Example3b_LinearFitXYerrors" src="https://github.com/user-attachments/assets/5189936e-26aa-413f-b75e-9bc1fa8fde75" />
+
+
+## Example-4: errors in only one variable (new in v0.2.0)
+*Synthetic data with known ground truth: a = 2, b = 1.5, σ = 0.4*
+
+What happens when errors on one side are declared but not the other? Each
+title displays the recovered slope versus the true one (1.5):
+
+- errors declared in Y only (line attenuated, errors in X ignored):
+
+<img width="1950" height="1260" alt="Example4a_LinearFitXYerrors" src="https://github.com/user-attachments/assets/ebe5dd80-5dd4-4c43-a4c7-7099eb1fd429" />
+
+- errors declared in X only:
+
+<img width="1950" height="1260" alt="Example4b_LinearFitXYerrors" src="https://github.com/user-attachments/assets/4e03ec14-b210-4df2-8c48-841f4e158077" />
+
+- errors declared in both X and Y (the York fit recovers the true slope,
+  overlaid with the fits that ignore errors in X or in Y):
+
+<img width="1950" height="1260" alt="Example4c_LinearFitXYerrors" src="https://github.com/user-attachments/assets/7a02d68c-1f59-444a-a622-79ead544a7eb" />
