@@ -48,7 +48,6 @@ The figure shows the fit line with its pointwise 95% confidence band
 ellipses when both X and Y have correlated errors), and the fit summary in
 the title. The legacy `isplot=true` keyword still works via the extension.
 
-
 ##
 ## Installation
 ```julia
@@ -67,7 +66,7 @@ st = linearfitxy(X, Y)    # no errors in X and Y, no plot displayed
 
 st = linearfitxy(X, Y; σX, σY, isplot=true)    # X-Y errors not correlated (r=0); plot with ratio=1
 
-st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=:auto)  # X-Y errors not correlated (r=0); plot with ratio=1
+st = linearfitxy(X, Y; σX, σY, r=0, isplot=true, ratio=\:auto)  # X-Y errors not correlated (r=0); plot with ratio=1
 
 # Or plot afterwards (Plots.jl loaded):
 # st = linearfitxy(X, Y; σX, σY, r)
@@ -122,7 +121,7 @@ While the results are consistent with the references provided, Amen (2012) repor
 
 *Cantrell, C. [2008] Technical Note: Review of methods for linear least-squares fitting of data and application to atmospheric chemistry problems. Atmospheric Chem. & Physics, 8(17), pp.5477–5487*
 
-*Mahon, K. [1996] The New “York” Regression: Application of an Improved Statistical Method to Geochemistry. International Geology Review, 38(4), pp.293–303*
+*Mahon, K. [1996] The New "York" Regression: Application of an Improved Statistical Method to Geochemistry. International Geology Review, 38(4), pp.293–303*
 
 *Reduced Chi-squared Test: https://en.wikipedia.org/wiki/Reduced_chi-squared_statistic*
 
@@ -135,24 +134,15 @@ While the results are consistent with the references provided, Amen (2012) repor
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 ##
-## Acknowledgments
-
-The v0.2.0 refactoring — Plots.jl package extension, robustness fixes,
-the exact 95% confidence band, and the renewed example and test suite —
-was carried out with the assistance of Mistral AI.
-
-##
-### *For what follows, see all data and code in the examples folder* 
-##
 ## Example-0: no errors in X and Y
 *References: pba.ucdavis.edu (0a) and Altman and Gardner (1988) (0b)*
 
 Without input errors, the package reproduces OLS and draws the pointwise 95%
 confidence band of the fitted line.
 
-<img width="1800" height="1200" alt="Example0a_LinearFitXYerrors" src="https://github.com/user-attachments/assets/bed3de95-1cbb-4a63-a845-bf97f4d06fab" />
+<!-- UPLOAD: Example0a_LinearFitXYerrors.png -->
 
-<img width="1800" height="1200" alt="Example0b_LinearFitXYerrors" src="https://github.com/user-attachments/assets/5a09d998-a462-4058-9bcd-25fb00f849e9" />
+![Example0b_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855741-7fbc7d80-76af-4f0b-a960-13e12872f8fd.png)
 
 
 ## Example-1: uncorrelated errors in X and Y
@@ -163,7 +153,7 @@ figure also overlays the fits obtained by declaring errors in only one of the
 variables (green: Y errors only; orange: X errors only), showing the
 regression-dilution effect on the slope.
 
-<img width="1950" height="1260" alt="Example1_LinearFitXYerrors" src="https://github.com/user-attachments/assets/28a7127a-51fc-4f1e-aca2-45c981df9f92" />
+![Example1_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855764-ce6f5e40-8d5f-4d18-9c10-bdd23fec927b.png)
 
 
 ## Example-2: correlated errors in X and Y
@@ -172,7 +162,15 @@ regression-dilution effect on the slope.
 Per-point error correlations (including negative values), covariance-error
 ellipses, and the 95% confidence band of the fitted line.
 
-<img width="1950" height="1260" alt="Example2_LinearFitXYerrors" src="https://github.com/user-attachments/assets/09e33b54-d344-4b57-bc1c-f6513c8edf18" />
+Note: the shaded band is the **confidence band of the fitted line** — it
+bounds the line's uncertainty, not the data's spread — *not* a prediction band
+for future data points. Points may legitimately fall outside it when the stated
+errors underestimate the true dispersion — which is the case here, as the large
+reduced chi-square (S ≈ 3.5) signals: see
+*[When to consider a Bayesian approach](#when-to-consider-a-bayesian-approach)*
+for an explicit intrinsic-scatter treatment of this dataset.
+
+![Example2_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855799-20aeb2fb-c327-46c6-b864-dc5ebca75736.png)
 
 
 ## Example-3: correlated vs uncorrelated errors
@@ -180,11 +178,11 @@ ellipses, and the 95% confidence band of the fitted line.
 
 Same data fitted with uncorrelated errors (r = 0):
 
-<img width="1950" height="1260" alt="Example3_LinearFitXYerrors" src="https://github.com/user-attachments/assets/902ca2c4-e8ce-4730-811e-6f55469a9a24" />
+![Example3_LinearFitXYerrors](https://user-images.githubusercontent.com/20739393/132855823-f056ce55-c017-4360-9ecf-b5fbcd6f3582.png)
 
 and with correlated errors (r = 0.7071):
 
-<img width="1950" height="1260" alt="Example3b_LinearFitXYerrors" src="https://github.com/user-attachments/assets/5189936e-26aa-413f-b75e-9bc1fa8fde75" />
+<!-- UPLOAD: Example3b_LinearFitXYerrors.png -->
 
 
 ## Example-4: errors in only one variable (new in v0.2.0)
@@ -195,13 +193,13 @@ title displays the recovered slope versus the true one (1.5):
 
 - errors declared in Y only (line attenuated, errors in X ignored):
 
-<img width="1950" height="1260" alt="Example4a_LinearFitXYerrors" src="https://github.com/user-attachments/assets/ebe5dd80-5dd4-4c43-a4c7-7099eb1fd429" />
+<!-- UPLOAD: Example4a_LinearFitXYerrors.png -->
 
 - errors declared in X only:
 
-<img width="1950" height="1260" alt="Example4b_LinearFitXYerrors" src="https://github.com/user-attachments/assets/4e03ec14-b210-4df2-8c48-841f4e158077" />
+<!-- UPLOAD: Example4b_LinearFitXYerrors.png -->
 
 - errors declared in both X and Y (the York fit recovers the true slope,
   overlaid with the fits that ignore errors in X or in Y):
 
-<img width="1950" height="1260" alt="Example4c_LinearFitXYerrors" src="https://github.com/user-attachments/assets/7a02d68c-1f59-444a-a622-79ead544a7eb" />
+<!-- UPLOAD: Example4c_LinearFitXYerrors.png -->
