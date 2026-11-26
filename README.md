@@ -103,7 +103,7 @@ Practical MCMC settings (Turing.jl ≥ 0.41): initialize the chains at the York 
 ## Performance with large datasets
 
 - The York fit itself is extremely fast: each weight-iteration pass is O(n) and converges in a few iterations regardless of n. A million points fit in well under a second; the fit is never the bottleneck.
-- The Bayesian formulation matters at large n:
+- The Bayesian formulation (not implemented in this package; tested in the study above) matters at large n:
   - avoid the joint model that samples the n latent X*ᵢ values (O(n) parameters): beyond a few thousand points it becomes slow and mixes poorly;
   - the marginalized model has only 4-5 parameters; each likelihood evaluation is a vectorized O(n) pass, so n = 10⁵ is routine. Use the closed-form 2×2 per-point log-density instead of constructing an `MvNormal` object per point for an order-of-magnitude speedup.
 
