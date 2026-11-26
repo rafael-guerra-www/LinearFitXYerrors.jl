@@ -135,6 +135,13 @@ While the results are consistent with the references provided, Amen (2012) repor
 *York, D., Evensen, N., Martinez, M. and Delgado J. [2004] Unified equations for the slope; intercept and standard errors of the best straight line. Am. J.Phys. 72 [3]*
 
 ##
+## Acknowledgments
+
+The v0.2.0 refactoring — Plots.jl package extension, robustness fixes,
+the exact 95% confidence band, and the renewed example and test suite —
+was carried out with the assistance of Mistral AI.
+
+##
 ### *For what follows, see all data and code in the examples folder* 
 ##
 ## Example-0: no errors in X and Y
